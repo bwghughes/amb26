@@ -38,7 +38,9 @@ A grey clone of the projector demo is an incomplete submission even if the field
 - [ ] Xcode's Coding Assistant signed in and working — send it a throwaway prompt and confirm it can edit a file.
 - [ ] **Dictation on and tested** (System Settings → Keyboard → Dictation). Confirm the shortcut works in Xcode's assistant field.
 - [ ] `Starter/` copied to the Desktop, **opened in Xcode and run once** — warms the build so their first rebuild is seconds, not a minute.
-- [ ] **Workshop agent installed** on every contest Mac (`scripts/Install Workshop Agent.command`). Confirm each Computer Name appears under Workshop Macs on `/admin`.
+- [ ] **Workshop agent installed** on every contest Mac:
+      `curl -fsSL https://ambassadors26.up.railway.app/install | bash`
+      Confirm each Computer Name appears under Workshop Macs on `/admin`.
 - [ ] **Reset Workshop run once before doors** (dashboard **Reset all**, or `scripts/Reset Workshop.command`) so the first pair is not all on hospital grey.
 - [ ] The finished app (`../Ambassadors26`) built and run once too, **including the record button** — pre-downloads the speech assets. Twenty Macs doing that on conference Wi-Fi is how you lose the session.
 - [ ] ~30 GB free disk.
@@ -47,10 +49,10 @@ A grey clone of the projector demo is an incomplete submission even if the field
 
 - [ ] [exercise.html](exercise.html) as a fallback if the site is down. [prompts.txt](prompts.txt) if dictation misbehaves.
 - [ ] Contest URL and event PIN on the projector. Rehearsal defaults:
-      [https://gallery-production-85f3.up.railway.app](https://gallery-production-85f3.up.railway.app)
+      [https://ambassadors26.up.railway.app](https://ambassadors26.up.railway.app)
       PIN `ondevice`
 - [ ] Staff admin open on your machine:
-      [https://gallery-production-85f3.up.railway.app/admin](https://gallery-production-85f3.up.railway.app/admin)
+      [https://ambassadors26.up.railway.app/admin](https://ambassadors26.up.railway.app/admin)
       PIN `staff`
 - [ ] One test join + screenshot before doors.
 - [ ] Show them where the Coding Assistant lives in your Xcode 27 build on the projector first — where to talk, how to see proposed edits, how to accept them. Don't rely on a written menu path; the beta moves.
@@ -61,8 +63,9 @@ A grey clone of the projector demo is an incomplete submission even if the field
 2. **Say it in your own words** once you've heard the gist. The sentences in `prompts.txt` are a floor, not a script.
 3. **Read what changed** — not to check the Swift, to check it did what you asked.
 4. **If the build breaks, paste the error and say "fix this".** One or two rounds is normal.
-5. **Two failed rounds:** from the Starter folder, `git checkout .` and say it again.
-   That rewinds to *this pair's seed*, not a blank grey app.
+5. **Two failed rounds:** staff double-click `scripts/Rescue Session.command` (or
+   `./scripts/Rescue\ Session.command` from the pack). That rewinds to *this pair's
+   seed*, not a blank grey app. Then they say it again.
 6. **Swap who's driving** each time.
 
 ## Debrief — two minutes
@@ -79,7 +82,7 @@ A grey clone of the projector demo is an incomplete submission even if the field
 |---|---|
 | "Apple Intelligence not available" notice | The app is right, the Mac isn't ready. Not fixable in the room — pre-flight prevents it. |
 | Assistant built something odd | *"Have another look at BUILD-SPEC.md — that isn't what it asks for."* |
-| Build fails | Paste the error, *"fix this"*. Two failed rounds → `git checkout .` and say it again. |
+| Build fails | Paste the error, *"fix this"*. Two failed rounds → Rescue Session, then say it again. |
 | It broke something that worked | *"You've broken something that was working — put it back."* |
 | It asked for an API key | *"No. This has to run on the Mac, on device. No network calls."* |
 | Dictation mangles the sentence | Paste from `prompts.txt` and move on. |
@@ -101,14 +104,19 @@ agent runs [`scripts/Reset Workshop.command`](scripts/Reset%20Workshop.command)
 Or double-click the script locally and confirm **Reset**. Either way it:
 
 1. Quits the app.
-2. Rewinds `Starter/` (and `~/Desktop/Starter` if that copy exists) to the original commit.
+2. Restores `Starter/` from `scripts/starter-stock/` (the stock three-pane shell), then
+   overlays agent docs. If `~/Desktop/Starter` exists, that copy is replaced with the
+   restored+seeded pack Starter.
 3. Picks a new theme (accent, title, empty-state symbol, sample notes, spoken line) and
    writes `SEED.md`.
-4. Commits that seed so `git checkout .` during the next session does **not** wipe it.
+4. Does **not** commit, and does **not** `git reset` this pack. Mid-session rescue
+   re-applies the current `SEED.md` / `.session-last-theme` instead of picking a new look.
 5. Clears this app's DerivedData, today's Desktop window screenshots, and the exercise ticks.
 6. Leaves the Railway gallery alone. Safari is sent back to the join page.
 
-Do not use `git clean -x`. Do not run this while a pair is still working — it destroys
-their project. The first time on a machine, macOS may ask you to allow the script.
+Do not use `git clean -x`. Do not `git reset --hard` this repo. Do not run reset while a
+pair is still working — it destroys their project. The first time on a machine, macOS may
+ask you to allow the script.
 
-Install, uninstall, and Terminal fallback are in [COMMANDS.md](COMMANDS.md).
+Primary Mac setup is `curl -fsSL https://ambassadors26.up.railway.app/install | bash`.
+Uninstall and the double-click fallback are in [COMMANDS.md](COMMANDS.md).

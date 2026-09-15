@@ -23,12 +23,15 @@ Keep the contest tab open when they turn Wi-Fi off. Ticks queue and sync when
 the network is back. `exercise.html` at the repo root is the fallback if the
 site is down.
 
-Docker copies `content/exercise.html`. After you edit the root `exercise.html`,
-copy it there before deploy:
+Docker copies `content/exercise.html` and `content/install.sh`. After you edit the
+root `exercise.html` or `scripts/install-workshop-agent.sh`, copy them before deploy:
 
 ```bash
 cp ../exercise.html content/exercise.html
+cp ../scripts/install-workshop-agent.sh content/install.sh
 ```
+
+Mac setup: `curl -fsSL https://ambassadors26.up.railway.app/install | bash`
 
 ## Railway
 
@@ -40,6 +43,6 @@ Web service + Postgres + a private bucket. Env on the web service:
 - `AGENT_SECRET` (workshop agent on each Mac; rehearsal default `workshop-reset`)
 - `AWS_ENDPOINT_URL`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME`, `AWS_DEFAULT_REGION`
 
-Live: [https://gallery-production-85f3.up.railway.app](https://gallery-production-85f3.up.railway.app)
+Live: [https://ambassadors26.up.railway.app](https://ambassadors26.up.railway.app)
 
 See [FACILITATOR.md](../FACILITATOR.md) for the URL to put on the projector.

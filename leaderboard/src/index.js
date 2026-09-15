@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import { createDb } from "./db.js";
 import {
   adminGate,
+  adminLiveFragment,
   adminLivePage,
   adminToken,
   joinPage,
@@ -51,6 +52,15 @@ async function teamFrom(c) {
 
 function isAdmin(c) {
   return getCookie(c, ADMIN_COOKIE) === adminToken(staffPin);
+}
+
+function wantsHtmlSwap(c) {
+  return c.req.header("HX-Request") === "true";
+}
+
+async function adminLiveHtml(c) {
+  const [teams, machines] = await Promise.all([db.listLive(), db.listMachines()]);
+  return c.html(adminLiveFragment(teams, machines));
 }
 
 function secretsMatch(got, expected) {
@@ -180,10 +190,31 @@ app.get("/hero-banner.png", async (c) => {
   });
 });
 
+app.get("/htmx.min.js", async (c) => {
+  const file = path.resolve(here, "../public/htmx.min.js");
+  if (!existsSync(file)) return c.notFound();
+  const bytes = await readFile(file);
+  return new Response(bytes, {
+    headers: {
+      "Content-Type": "text/javascript; charset=utf-8",
+      "Cache-Control": "public, max-age=86400",
+    },
+  });
+});
+
 app.get("/admin", async (c) => {
   if (!isAdmin(c)) return c.html(adminGate());
   const [teams, machines] = await Promise.all([db.listLive(), db.listMachines()]);
   return c.html(adminLivePage(teams, machines));
+});
+
+app.get("/admin/live", async (c) => {
+  if (!isAdmin(c)) {
+    if (c.req.header("HX-Request")) c.header("HX-Redirect", "/admin");
+    return c.body("", 401);
+  }
+  const [teams, machines] = await Promise.all([db.listLive(), db.listMachines()]);
+  return c.html(adminLiveFragment(teams, machines));
 });
 
 app.post("/admin", async (c) => {
@@ -216,15 +247,17 @@ app.post("/admin/reset", async (c) => {
   if (!isAdmin(c)) return c.redirect("/admin", 302);
   const body = await c.req.parseBody();
   const id = String(body.id || "");
-  if (!/^[0-9a-f-]{36}$/i.test(id)) return c.redirect("/admin", 303);
+  if (!/^[0-9a-f-]{36}$/i.test(id)) {
+    return wantsHtmlSwap(c) ? adminLiveHtml(c) : c.redirect("/admin", 303);
+  }
   await db.requestReset({ id });
-  return c.redirect("/admin", 303);
+  return wantsHtmlSwap(c) ? adminLiveHtml(c) : c.redirect("/admin", 303);
 });
 
 app.post("/admin/reset-all", async (c) => {
   if (!isAdmin(c)) return c.redirect("/admin", 302);
   await db.requestReset({ all: true });
-  return c.redirect("/admin", 303);
+  return wantsHtmlSwap(c) ? adminLiveHtml(c) : c.redirect("/admin", 303);
 });
 
 app.post("/api/agent/hello", async (c) => {
@@ -275,6 +308,23 @@ app.post("/api/agent/ack", async (c) => {
   if (!machine) return c.json({ error: "unknown agent" }, 401);
   return c.json({ ok: true });
 });
+
+function installScriptHeaders() {
+  return {
+    "Content-Type": "text/x-shellscript; charset=utf-8",
+    "Content-Disposition": 'inline; filename="install.sh"',
+    "Cache-Control": "no-cache",
+  };
+}
+
+async function serveInstall() {
+  const file = path.resolve(here, "../content/install.sh");
+  if (!existsSync(file)) return null;
+  return new Response(await readFile(file), { headers: installScriptHeaders() });
+}
+
+app.get("/install", async (c) => (await serveInstall()) || c.notFound());
+app.get("/install.sh", async (c) => (await serveInstall()) || c.notFound());
 
 app.get("/health", (c) => c.json({ ok: true }));
 

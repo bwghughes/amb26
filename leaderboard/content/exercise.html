@@ -540,7 +540,7 @@
       <li>If you started on the contest website, stay on that tab — the upload form is on this step.
           Turn Wi-Fi back on first.</li>
       <li>If you're on this local file instead, open
-          <a class="gallery-url" href="https://gallery-production-85f3.up.railway.app/">https://gallery-production-85f3.up.railway.app/</a>,
+          <a class="gallery-url" href="https://ambassadors26.up.railway.app/">https://ambassadors26.up.railway.app/</a>,
           enter the same team name and PIN, and upload there.</li>
       <li>You should see your window on the wall.</li>
     </ol>
@@ -585,7 +585,7 @@
         <tr><td>It asked you for an API key or an account</td><td class="fix"><q>No. This has to run on the Mac, on device. No network calls.</q></td></tr>
         <tr><td>Something that used to work has stopped</td><td class="fix"><q>You've broken something that was working — put it back.</q></td></tr>
         <tr><td>The button does nothing at all</td><td class="fix"><q>I clicked Build initiative and nothing happened.</q></td></tr>
-        <tr><td>Two attempts have failed</td><td class="fix">In Terminal, from the Starter folder: <kbd>git checkout .</kbd> — that rewinds to the start. Then say the sentence again.</td></tr>
+        <tr><td>Two attempts have failed</td><td class="fix">Ask staff to restore this session’s look (<kbd>Rescue Session.command</kbd>). Then say the sentence again.</td></tr>
         <tr><td>A notice about Apple Intelligence being unavailable</td><td class="fix">Not your fault and not fixable here. Put your hand up.</td></tr>
         <tr><td>Dictation garbled your sentence</td><td class="fix">Use the <b class="ui">Copy</b> button instead and move on. Don't lose two minutes to it.</td></tr>
         <tr><td>It used the old speech API / words only appear after you stop</td><td class="fix"><q>Have another look at BUILD-SPEC.md — section 3. Use SpeechAnalyzer, not SFSpeechRecognizer. I want the words to appear while I'm still talking.</q></td></tr>
@@ -635,12 +635,18 @@
   var KEY = "mib-codealong-v1";
   var POS = "mib-codealong-pos";
   var live = document.getElementById("live");
-  var hashReset = location.hash.slice(1) === "reset";
+  function isResetHash(h) {
+    return (h || "").replace(/^#/, "") === "reset";
+  }
+  var hashReset = isResetHash(location.hash);
   if (hashReset) {
     try {
       localStorage.removeItem(KEY);
       localStorage.removeItem(POS);
     } catch (e) {}
+    // Drop #reset immediately so a refresh / file opener is not given
+    // exercise.html#reset as a path (macOS `open` treats that as a filename).
+    try { history.replaceState(null, "", location.href.split("#")[0]); } catch (e) {}
   }
 
   function copy(text, btn) {
@@ -823,6 +829,18 @@
 
   window.addEventListener("hashchange", function () {
     var id = location.hash.slice(1);
+    if (isResetHash(id)) {
+      try {
+        localStorage.removeItem(KEY);
+        localStorage.removeItem(POS);
+      } catch (e) {}
+      boxes.forEach(function (b) { b.checked = false; });
+      persist(); paintDone();
+      main.forEach(paintNav);
+      live.textContent = "Checklist cleared";
+      show(steps[0].id, true);
+      return;
+    }
     if (index[id] != null && id !== steps[current].id) show(id, false);
   });
 

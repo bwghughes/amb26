@@ -20,12 +20,13 @@ staff dashboard (agent installed on each contest machine), or double-click
 Pairs join at the home page, follow the exercise there, and upload a screenshot
 at the last step. Staff watch live progress at `/admin` and judge the wall.
 
-- Join (put this on the projector): [https://gallery-production-85f3.up.railway.app](https://gallery-production-85f3.up.railway.app)
-- Wall: [https://gallery-production-85f3.up.railway.app/wall](https://gallery-production-85f3.up.railway.app/wall)
-- Admin: [https://gallery-production-85f3.up.railway.app/admin](https://gallery-production-85f3.up.railway.app/admin)
+- Join (put this on the projector): [https://ambassadors26.up.railway.app](https://ambassadors26.up.railway.app)
+- Wall: [https://ambassadors26.up.railway.app/wall](https://ambassadors26.up.railway.app/wall)
+- Admin: [https://ambassadors26.up.railway.app/admin](https://ambassadors26.up.railway.app/admin)
 - Event PIN (rehearsal): `ondevice`
 - Staff PIN (rehearsal): `staff`
 - Agent secret (rehearsal): `workshop-reset`
+- Contest Mac setup: `curl -fsSL https://ambassadors26.up.railway.app/install | bash`
 
 The gallery app is [`leaderboard/`](leaderboard/). Update the live URL here, in
 `exercise.html`, and in `FACILITATOR.md` if the Railway domain changes.
@@ -37,7 +38,10 @@ The gallery app is [`leaderboard/`](leaderboard/). Update the live URL here, in
 | [exercise.html](exercise.html) | Participant handout — open this |
 | [Starter/](Starter/) | The Xcode project the pairs open |
 | [scripts/Reset Workshop.command](scripts/Reset%20Workshop.command) | Local rewind + new seed |
-| [scripts/Install Workshop Agent.command](scripts/Install%20Workshop%20Agent.command) | Let /admin reset this Mac |
+| [scripts/Rescue Session.command](scripts/Rescue%20Session.command) | Mid-session rewind to this pair’s seed |
+| [scripts/starter-stock/](scripts/starter-stock) | Pristine three-pane shell reset copies from |
+| [scripts/install-workshop-agent.sh](scripts/install-workshop-agent.sh) | Curlable Mac setup (`/install`) |
+| [scripts/Install Workshop Agent.command](scripts/Install%20Workshop%20Agent.command) | Double-click fallback for `/admin` reset |
 | [leaderboard/](leaderboard/) | Contest site (join, exercise, admin, wall) |
 | [FACILITATOR.md](FACILITATOR.md) | Pre-flight and run sheet |
 | [COMMANDS.md](COMMANDS.md) | Reset, rescue, seed — copy-paste |

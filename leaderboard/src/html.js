@@ -149,7 +149,7 @@ export function adminToken(pin) {
   return createHmac("sha256", pin).update("mib-admin").digest("hex");
 }
 
-export function layout({ title, body, heading, sub, nav, wrapClass }) {
+export function layout({ title, body, heading, sub, nav, wrapClass, extraHead }) {
   return `<!DOCTYPE html>
 <html lang="en-GB">
 <head>
@@ -157,6 +157,7 @@ export function layout({ title, body, heading, sub, nav, wrapClass }) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(title)}</title>
 <style>${mosaicVars}</style>
+${extraHead || ""}
 </head>
 <body>
 <div class="wrap${wrapClass ? " " + wrapClass : ""}">
@@ -261,8 +262,13 @@ export function adminLivePage(teams, machines = []) {
     heading: "Staff",
     sub: "Reset Macs between pairs. Watch where each team is. The wall is the leaderboard.",
     nav: adminNav(),
-    body: adminLiveBody(teams, machines),
+    extraHead: `<script src="/htmx.min.js" defer></script>`,
+    body: `<div id="board" hx-get="/admin/live" hx-trigger="every 3s [!document.hidden]" hx-swap="innerHTML" hx-sync="this:replace">${adminLiveBody(teams, machines)}</div>`,
   });
+}
+
+export function adminLiveFragment(teams, machines = []) {
+  return adminLiveBody(teams, machines);
 }
 
 function adminLiveBody(teams, machines) {
@@ -273,7 +279,9 @@ function adminLiveBody(teams, machines) {
 <div class="stats">
   <span><b id="n-macs-online">${online}</b> online</span>
   <span><b id="n-macs">${machines.length}</b> agents</span>
-  <form class="inline" method="post" action="/admin/reset-all" onsubmit="return confirm('Reset EVERY connected Mac? This wipes the Xcode project on those machines.');">
+  <form class="inline" method="post" action="/admin/reset-all"
+        hx-post="/admin/reset-all" hx-target="#board" hx-swap="innerHTML"
+        hx-confirm="Reset EVERY connected Mac? This wipes the Xcode project on those machines.">
     <button class="btn danger small" type="submit">Reset all Macs</button>
   </form>
 </div>
@@ -314,10 +322,7 @@ function adminLiveBody(teams, machines) {
   <tbody id="live-body">${teamRows(teams)}</tbody>
 </table>
 </div>
-<p class="empty" id="live-empty" ${teams.length ? "hidden" : ""}>No teams yet. They join at the home page.</p>
-<script>
-${adminClientScript()}
-</script>`;
+<p class="empty" id="live-empty" ${teams.length ? "hidden" : ""}>No teams yet. They join at the home page.</p>`;
 }
 
 function machineRows(machines) {
@@ -334,7 +339,9 @@ function machineRow(m) {
     <td class="${live ? "live-dot" : "stale"}">${live ? "Live · " : ""}${escapeHtml(formatAgo(m.last_seen))}</td>
     <td>${m.last_reset_at ? escapeHtml(formatAgo(m.last_reset_at)) : "—"}</td>
     <td>
-      <form class="inline" method="post" action="/admin/reset" onsubmit="return confirm('Reset ${escapeHtml(m.label)}? This wipes the Xcode project on that Mac.');">
+      <form class="inline" method="post" action="/admin/reset"
+            hx-post="/admin/reset" hx-target="#board" hx-swap="innerHTML"
+            hx-confirm="Reset ${escapeHtml(m.label)}? This wipes the Xcode project on that Mac.">
         <input type="hidden" name="id" value="${escapeHtml(m.id)}">
         <button class="btn small" type="submit">Reset</button>
       </form>
@@ -373,85 +380,6 @@ function teamRow(t) {
     <td class="${live ? "live-dot" : "stale"}">${live ? "Live · " : ""}${escapeHtml(seen)}</td>
     <td>${shot}</td>
   </tr>`;
-}
-
-function adminClientScript() {
-  const steps = JSON.stringify(PLAY_STEPS);
-  return `const STEPS = ${steps};
-function stepIndex(id) {
-  for (var i = 0; i < STEPS.length; i++) if (STEPS[i].id === id) return i;
-  return -1;
-}
-function stepLabel(id) {
-  for (var i = 0; i < STEPS.length; i++) if (STEPS[i].id === id) return STEPS[i].label;
-  return id || "—";
-}
-function tickCount(ticks) {
-  if (!ticks) return 0;
-  return Object.keys(ticks).filter(function (k) { return ticks[k]; }).length;
-}
-function ago(iso) {
-  var s = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
-  if (s < 10) return "just now";
-  if (s < 60) return s + "s ago";
-  if (s < 3600) return Math.floor(s / 60) + "m ago";
-  return Math.floor(s / 3600) + "h ago";
-}
-function fresh(iso) { return Date.now() - new Date(iso).getTime() < 45000; }
-function row(t) {
-  var idx = stepIndex(t.step);
-  var pips = STEPS.map(function (s, i) {
-    var cls = i === idx ? "pip now" : i < idx ? "pip on" : "pip";
-    return '<span class="' + cls + '" title="' + s.label + '"></span>';
-  }).join("");
-  var live = fresh(t.last_seen);
-  var shot = t.submission_id
-    ? '<a href="/images/' + encodeURIComponent(t.submission_id) + '">View</a>'
-    : "—";
-  var name = String(t.team_name || "").replace(/&/g,"&amp;").replace(/</g,"&lt;");
-  return "<tr><td><strong>" + name + "</strong></td><td>" + stepLabel(t.step) +
-    '</td><td><div class="pips">' + pips + "</div></td><td>" + tickCount(t.ticks) +
-    '</td><td class="' + (live ? "live-dot" : "stale") + '">' + (live ? "Live · " : "") + ago(t.last_seen) +
-    "</td><td>" + shot + "</td></tr>";
-}
-async function tick() {
-  try {
-    var res = await fetch("/admin/api/state", { credentials: "same-origin" });
-    if (!res.ok) return;
-    var data = await res.json();
-    var teams = data.teams || [];
-    var macs = data.machines || [];
-    document.getElementById("n-teams").textContent = teams.length;
-    document.getElementById("n-shots").textContent = teams.filter(function (t) { return t.submission_id; }).length;
-    document.getElementById("live-body").innerHTML = teams.map(row).join("");
-    document.getElementById("live-empty").hidden = teams.length > 0;
-    document.getElementById("n-macs").textContent = macs.length;
-    document.getElementById("n-macs-online").textContent = macs.filter(function (m) { return freshMac(m.last_seen); }).length;
-    document.getElementById("mac-body").innerHTML = macs.map(macRow).join("");
-    document.getElementById("mac-empty").hidden = macs.length > 0;
-  } catch (e) {}
-}
-function freshMac(iso) { return Date.now() - new Date(iso).getTime() < 15000; }
-function macStatus(m) {
-  if (m.reset_queued) return "Queued";
-  if (m.reset_state === "running") return "Resetting…";
-  if (m.reset_state === "failed") return "Failed" + (m.reset_error ? ": " + m.reset_error : "");
-  return "Idle";
-}
-function macRow(m) {
-  var live = freshMac(m.last_seen);
-  var name = String(m.label || "").replace(/&/g,"&amp;").replace(/</g,"&lt;");
-  var host = String(m.hostname || "").replace(/&/g,"&amp;").replace(/</g,"&lt;");
-  var id = String(m.id || "").replace(/"/g, "");
-  return "<tr><td><strong>" + name + "</strong><br><span style='color:var(--ink-dim);font-size:.85rem'>" + host +
-    "</span></td><td>" + macStatus(m) + '</td><td class="' + (live ? "live-dot" : "stale") + '">' +
-    (live ? "Live · " : "") + ago(m.last_seen) + "</td><td>" + (m.last_reset_at ? ago(m.last_reset_at) : "—") +
-    '</td><td><form class="inline" method="post" action="/admin/reset" onsubmit="return confirm(\'Reset this Mac?\');">' +
-    '<input type="hidden" name="id" value="' + id + '">' +
-    '<button class="btn small" type="submit">Reset</button></form></td></tr>';
-}
-setInterval(tick, 3000);
-`;
 }
 
 export function livePayload(teams) {

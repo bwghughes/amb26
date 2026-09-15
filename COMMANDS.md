@@ -6,7 +6,7 @@ Copy-paste from the **codealong folder** (the one that contains `Starter/`, `scr
 cd /path/to/Ambassadors26-CodeAlong
 ```
 
-The pairs never need these. They talk to Xcode. You run reset between pairs, and `git checkout .` if a pair’s build is stuck.
+The pairs never need these. They talk to Xcode. You run reset between pairs, and Rescue Session if a pair’s build is stuck.
 
 Do not run any of this while a pair is still working.
 
@@ -20,7 +20,7 @@ Do not run any of this while a pair is still working.
 
 First time on a machine: Right-click → **Open**, then allow it. After that, double-click is enough.
 
-Confirm **Reset**. It quits the app, rewinds the project, picks a new look, commits that seed, clears this app’s DerivedData, deletes today’s Desktop *window* screenshots, and reopens the handout with the ticks cleared. The gallery on the web is not touched.
+Confirm **Reset**. It quits the app, restores the stock three-pane shell, picks a new look, clears this app’s DerivedData, deletes today’s Desktop *window* screenshots, and reopens the handout with the ticks cleared. The gallery on the web is not touched. It does not commit, and it does not `git reset` this repo.
 
 **Same thing from Terminal**, if the double-click is blocked:
 
@@ -53,16 +53,29 @@ After it finishes:
 Install once on every contest Mac. It sits in the background, checks in with the
 staff site, and runs `Reset Workshop.command --yes` when you press Reset.
 
-**Install** (first time: Right-click → Open):
+**Install** (primary — non-interactive):
+
+```bash
+curl -fsSL https://ambassadors26.up.railway.app/install | bash
+```
+
+That clones or updates this pack (default `~/Desktop/Ambassadors26-CodeAlong`),
+installs the LaunchAgent, and does **not** reset the workshop. Confirm the printed
+Computer Name under **Workshop Macs** on https://ambassadors26.up.railway.app/admin.
+
+Defaults: contest URL `https://ambassadors26.up.railway.app`, agent secret
+`workshop-reset`. Override with `SERVER`, `AGENT_SECRET`, `PACK`, or `PACK_REMOTE`.
+If GitHub is private, copy the pack onto the Mac first and re-run with `PACK` set
+to that folder.
+
+**Double-click fallback** (first time: Right-click → Open):
 
 ```bash
 open "$PACK/scripts/Install Workshop Agent.command"
 ```
 
-Accept the contest URL (`https://gallery-production-85f3.up.railway.app`) and the
-agent secret (`workshop-reset` unless you changed `AGENT_SECRET` on Railway).
-The Mac appears on https://gallery-production-85f3.up.railway.app/admin under
-**Workshop Macs**, named with that Mac's Computer Name.
+Accept the contest URL and the agent secret (`workshop-reset` unless you changed
+`AGENT_SECRET` on Railway).
 
 **From the dashboard:** **Reset** on one Mac, or **Reset all Macs**. Confirm. The
 Mac must be able to reach the site. If Wi-Fi is off, the reset is queued and
@@ -81,27 +94,32 @@ wipes `Starter/` the same way the local script does.
 
 ---
 
-## Rescue during a session (pair, not staff reset)
+## Rescue during a session (this pair’s seed, not a new look)
 
-Two failed builds. This rewinds to **this pair’s seed**, not a blank app.
+Two failed builds. This rewinds to **this pair’s seed**, not a blank grey app and not the next pair’s theme. `Starter/` is not its own git repo, so `git checkout .` will not do this.
 
-They must be in the same `Starter` folder Xcode has open — usually the Desktop copy:
+**Normal path — double-click**
+
+`scripts/Rescue Session.command`
+
+Confirm **Restore**. Then they say the sentence again.
+
+**Same thing from Terminal:**
 
 ```bash
-cd ~/Desktop/Starter
-git checkout .
+cd "$PACK"
+./scripts/Rescue\ Session.command
 ```
 
-If they opened the copy inside this repo instead:
+`--yes` skips the confirm dialog (same as reset):
 
 ```bash
-cd "$PACK/Starter"
-git checkout .
+./scripts/Rescue\ Session.command --yes
 ```
 
-Then they say the sentence again.
+That reads the current theme from `.session-last-theme` or `SEED.md`, restores the stock shell, re-applies that theme, and copies the result onto `~/Desktop/Starter` if that folder exists. It does not pick a new look, does not clear exercise ticks, and does not commit.
 
-Do **not** use `git reset --hard` or `git clean -x` as the rescue. `git clean -x` would throw away `SEED.md` and the pair’s look. The reset script is the only thing that should rewind to the original commit.
+Do **not** `git reset --hard` this pack. Do **not** `git clean -x`.
 
 ---
 
@@ -111,20 +129,10 @@ The reset script picks a random theme and avoids the one it used last. To pin on
 
 ```bash
 cd "$PACK"
-python3 scripts/apply_seed.py --starter "$PACK/Starter" --theme newsroom
-cd "$PACK/Starter"
-git add -A
-git commit -m "session seed: Newsroom"
+./scripts/Reset\ Workshop.command --theme newsroom
 ```
 
-If they are working from the Desktop copy, do the Desktop folder too, **same theme id**:
-
-```bash
-python3 scripts/apply_seed.py --starter ~/Desktop/Starter --theme newsroom
-cd ~/Desktop/Starter
-git add -A
-git commit -m "session seed: Newsroom"
-```
+`--yes` skips the confirm dialog. The Desktop copy is updated from the pack Starter after seeding. Do not commit the seed in this repo.
 
 Theme ids:
 
@@ -158,10 +166,12 @@ open "$PACK/exercise.html"
 open "$PACK/Starter/Ambassadors26.xcodeproj"
 ```
 
-Reset already opens `exercise.html#reset` (clears the ticks). To do that by itself:
+Reset already reopens the handout with ticks cleared. To do that by itself,
+open it as a **URL** (macOS `open path#reset` looks for a file named
+`exercise.html#reset` and fails):
 
 ```bash
-open "$PACK/exercise.html#reset"
+open -u "file://$PACK/exercise.html#reset"
 ```
 
 Answer-key app (staff only — not for the pairs):
@@ -179,9 +189,9 @@ Warm the speech assets from that finished app: Run it, click **Record call** onc
 Pairs open the home page, enter a team name and the event PIN, and work the
 exercise in that tab. Staff watch `/admin`. The wall is the leaderboard.
 
-- Join: https://gallery-production-85f3.up.railway.app
-- Wall: https://gallery-production-85f3.up.railway.app/wall
-- Admin: https://gallery-production-85f3.up.railway.app/admin
+- Join: https://ambassadors26.up.railway.app
+- Wall: https://ambassadors26.up.railway.app/wall
+- Admin: https://ambassadors26.up.railway.app/admin
 - Event PIN (rehearsal): `ondevice`
 - Staff PIN (rehearsal): `staff`
 
@@ -205,16 +215,15 @@ You do not type these. They are inside `Reset Workshop.command`, listed here so 
 # quit the workshop app
 osascript -e 'tell application "Ambassadors26" to quit'
 
-# in Starter/ and in ~/Desktop/Starter if that copy exists:
-git rev-list --max-parents=0 HEAD          # original starter commit
-git reset --hard <that-commit>
-git clean -fd                              # not -x
+# restore the stock three-pane shell into Starter/ (not git reset of this pack)
+rsync -a --delete scripts/starter-stock/ Starter/
 # overlay AGENTS.md / BUILD-SPEC.md / skills from scripts/starter-overlay/
-python3 scripts/apply_seed.py --starter <dir>
-git add -A
-git commit -m "session seed: <theme name>"
+python3 scripts/apply_seed.py --starter Starter   # or --theme <id> / rescue keeps the current id
+# if ~/Desktop/Starter exists, copy the restored+seeded pack Starter onto it
 
 rm -rf ~/Library/Developer/Xcode/DerivedData/*Ambassadors26*
 find ~/Desktop -maxdepth 1 \( -name 'Screen Shot *.png' -o -name 'Screenshot *.png' \) -mtime -1 -delete
-open exercise.html#reset
+open -u "file://$PACK/exercise.html#reset"
 ```
+
+Rescue is the same restore + overlay + seed, but it passes this pair’s theme id and skips the screenshot/tick cleanup.

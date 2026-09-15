@@ -84,7 +84,7 @@ It asked for an API key ........... "No. This has to run on the Mac, on device.
                                      No network calls."
 It broke something that worked .... "You've broken something that was working —
                                      put it back."
-Two failed attempts ............... git checkout .    then say it again
+Two failed attempts ............... Rescue Session.command    then say it again
 Speech only after you stop ........ "Use SpeechAnalyzer, not SFSpeechRecognizer.
                                      I want the words to appear while I'm still talking."
 

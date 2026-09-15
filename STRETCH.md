@@ -4,8 +4,9 @@ You built the app in three sentences. Here are two more, same routine: say it, l
 build, run it. `BUILD-SPEC.md` supplies the detail, as before.
 
 If your app broke and you want a clean start, the staff copy of the finished version is
-not on your Desktop — ask them, or rewind with `git checkout .` in the Starter folder
-and say the three sentences again.
+not on your Desktop — ask them, or double-click `scripts/Rescue Session.command` in the
+codealong folder (that restores *this session's* look, not a blank app) and say the
+three sentences again.
 
 ---
 
