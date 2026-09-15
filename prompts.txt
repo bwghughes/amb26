@@ -1,0 +1,97 @@
+MAC INITIATIVE BUILDER — WHAT TO SAY
+Three sentences build the app. Say them out loud, or paste them.
+
+First, in Safari: open the contest site, enter your team name and the PIN
+on the projector. Keep that tab. The steps live there.
+
+
+================================================================================
+FIRST, ONCE — WAKE UP THE ASSISTANT
+================================================================================
+
+Read AGENTS.md, Ambassadors26/BUILD-SPEC.md, and SEED.md. Follow them whenever I
+ask for something, and prefer the exact APIs they name. Reply with just “ready”.
+
+
+================================================================================
+PROMPT 1 — KEY POINTS
+================================================================================
+
+There are notes from a sales call in the left-hand pane. Make the Build initiative
+button actually read them and give me proper fields I could drop straight into our CRM,
+with how urgent this customer is right at the top — and all of it has to happen on
+this Mac, nothing leaves the laptop.
+
+  Then: Use sample → Build initiative → TURN THE WI-FI OFF → do it again.
+
+
+================================================================================
+PROMPT 2 — FOLLOW-UP EMAIL
+================================================================================
+
+Good. Now write the follow-up email I’d actually send this customer after that
+conversation, and let me copy it or open it in Mail.
+
+  Then: Copy, and paste it somewhere. Open in Mail.
+
+
+================================================================================
+PROMPT 3 — RECORD THE CALL
+================================================================================
+
+I don’t want to type my notes. Let me just talk to it and have it write them down
+while I’m speaking — and again, all on this Mac.
+
+  Then: Record call → allow the microphone → talk in this session's world
+  (the line is in SEED.md; Use sample shows the customer). Hospital fallback:
+
+They’ve got about three hundred Windows laptops, most of them four years old.
+The help desk is drowning. And they’re nervous about patient data leaving the building.
+
+  Words should appear as you speak. Stop recording → Build initiative.
+
+  Microphone fails? Use sample, then skip to Make it yours / Submit.
+
+
+================================================================================
+PROMPT 4 — MAKE IT YOURS
+================================================================================
+
+This has to stand out on a wall of screenshots. Keep every button working, but
+give the window a look that is obviously ours — start from SEED.md and go
+further if you like.
+
+  Behind? Skip this. The seed already changed the title, colour, and customer.
+
+
+================================================================================
+SUBMIT
+================================================================================
+
+Turn Wi-Fi back on. Stay on the contest tab. Three panes filled, and it
+shouldn't look like default grey. ⌘⇧4 then Space, click the app window.
+Attach the PNG on the Submit step. You should see it on the wall.
+
+
+================================================================================
+IF IT GOES WRONG — SAY ONE OF THESE
+================================================================================
+
+It built something odd ............ "Have another look at BUILD-SPEC.md — that isn't
+                                     what it asks for."
+Build failed ...................... paste the error, then: "fix this"
+It asked for an API key ........... "No. This has to run on the Mac, on device.
+                                     No network calls."
+It broke something that worked .... "You've broken something that was working —
+                                     put it back."
+Two failed attempts ............... git checkout .    then say it again
+Speech only after you stop ........ "Use SpeechAnalyzer, not SFSpeechRecognizer.
+                                     I want the words to appear while I'm still talking."
+
+
+================================================================================
+TALKING TO IT INSTEAD OF TYPING
+================================================================================
+
+Press the dictation key (or Edit > Start Dictation), say the sentence, press it again.
+The dictation is on-device too — which is the same thing you're selling.

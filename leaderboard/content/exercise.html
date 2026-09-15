@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mac Initiative Builder — 45-minute exercise · Apple Ambassadors Barcelona 2026</title>
+<style>
+  :root {
+    --cream: #fef6ed;
+    --blue: #1f73a0;
+    --teal: #37afb6;
+    --green: #6c946b;
+    --gold: #cc973d;
+    --gold-light: #e2b14d;
+    --taupe: #bfae8b;
+
+    --bg: var(--cream);
+    --card: #fffdf9;
+    --ink: #23323c;
+    --ink-dim: #6f6757;
+    --line: #ecdfcc;
+    --say-bg: #e8f4f5;
+    --say-line: var(--teal);
+    --say-ink: #16707a;
+    --warn-bg: #fbeeda;
+    --warn-line: var(--gold);
+    --good: var(--green);
+    --gold-ink: #7a5518;
+    --good-ink: #4a6f49;
+    --link: #175f83;
+    --sec: var(--blue);
+    --sec-ink: #175f83;
+    --on-sec: var(--cream);
+    --radius: 14px;
+  }
+  .s-blue  { --sec: var(--blue);  --sec-ink: #175f83; --on-sec: var(--cream); }
+  .s-teal  { --sec: var(--teal);  --sec-ink: #16707a; --on-sec: #0f1c23; }
+  .s-green { --sec: var(--green); --sec-ink: #4a6f49; --on-sec: #0f1c23; }
+  .s-gold  { --sec: var(--gold);  --sec-ink: #7a5518; --on-sec: #0f1c23; }
+  .s-taupe { --sec: var(--taupe); --sec-ink: #6f6757; --on-sec: #0f1c23; }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16222a;
+      --card: #1e2c35;
+      --ink: #fef6ed;
+      --ink-dim: #a89e8c;
+      --line: #33454f;
+      --say-bg: #16323a;
+      --say-line: #4fc3c9;
+      --say-ink: #5fd0d6;
+      --warn-bg: #34290f;
+      --warn-line: var(--gold-light);
+      --good: #8fbe8c;
+      --gold-ink: var(--gold-light);
+      --good-ink: var(--good);
+      --link: #7fd0dd;
+      --sec-ink: #6fb6d8;
+    }
+    .s-blue  { --sec-ink: #6fb6d8; }
+    .s-teal  { --sec-ink: #5fd0d6; }
+    .s-green { --sec-ink: #9ecb9c; }
+    .s-gold  { --sec-ink: var(--gold-light); }
+    .s-taupe { --sec-ink: #cdbd9c; }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    padding: 0 1.25rem 4rem;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  }
+  .wrap { max-width: 46rem; margin: 0 auto; }
+
+  .toolbar {
+    position: sticky; top: 0; z-index: 5; margin: 0 -1.25rem 1.5rem;
+    padding: .55rem 1.25rem .75rem;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: saturate(160%) blur(10px);
+    display: flex; gap: .75rem 1rem; align-items: center; justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .toolbar::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
+    background: var(--mosaic);
+  }
+  .brand {
+    font: 700 .68rem/1 inherit; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-dim); white-space: nowrap;
+  }
+  .tools { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+  #elapsed { font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: .04em; color: var(--gold-ink); }
+
+  ol.stepper {
+    display: flex; gap: .3rem; flex-wrap: wrap; align-items: center;
+    list-style: none; margin: 0; padding: 0; flex: 1 1 18rem;
+  }
+  .pill {
+    display: flex; align-items: center; gap: .4rem;
+    background: transparent; border: 1px solid var(--line); border-radius: 99px;
+    color: var(--ink-dim); font: 600 .78rem/1 inherit;
+    padding: .34rem .6rem .34rem .34rem; cursor: pointer;
+  }
+  .pill .n {
+    display: grid; place-items: center; width: 1.25rem; height: 1.25rem; flex: none;
+    border-radius: 99px; background: var(--line); color: var(--ink);
+    font: 700 .7rem/1 inherit;
+  }
+  .pill:hover { border-color: var(--sec); }
+  .pill[aria-current="step"] {
+    color: var(--on-sec); background: var(--sec); border-color: var(--sec);
+  }
+  .pill[aria-current="step"] .n { background: rgba(255,255,255,.28); color: var(--on-sec); }
+  .pill.done .n { background: var(--good); color: #0f1c23; }
+  .pill.done[aria-current="step"] .n { background: rgba(255,255,255,.28); }
+  @media (max-width: 42rem) { .pill .t { display: none; } .pill { padding: .34rem; } }
+
+  .crumb { font-size: .85rem; color: var(--ink-dim); margin: 0 0 .75rem; }
+  .crumb b { color: var(--ink); }
+
+  section.step { display: none; }
+  section.step.on { display: block; }
+  section.step:focus { outline: none; }
+
+  .hero-wrap {
+    background: var(--cream); border-radius: var(--radius);
+    padding: .25rem .75rem; margin: 0 0 1.5rem;
+  }
+  img.hero { display: block; width: 100%; height: auto; }
+  header.top { padding: .25rem 0 1rem; text-align: center; }
+  h1 { font-size: 2.15rem; line-height: 1.12; margin: 0 0 .35rem; letter-spacing: -.025em; }
+  .sub { color: var(--ink-dim); font-size: 1.05rem; margin: 0 auto; max-width: 34rem; }
+  .eyebrow {
+    font: 700 .74rem/1 inherit; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--gold-ink); margin: 0 0 .7rem;
+  }
+
+  :root, .mosaic, .toolbar {
+    --mosaic:
+      repeating-linear-gradient(90deg,
+        var(--blue) 0 15px, transparent 15px 18px,
+        var(--teal) 18px 29px, transparent 29px 32px,
+        var(--green) 32px 48px, transparent 48px 51px,
+        var(--gold) 51px 64px, transparent 64px 67px,
+        var(--teal) 67px 76px, transparent 76px 79px,
+        var(--gold-light) 79px 93px, transparent 93px 96px,
+        var(--blue) 96px 106px, transparent 106px 109px,
+        var(--green) 109px 121px, transparent 121px 124px);
+  }
+  hr.mosaic {
+    height: 7px; border: 0; border-radius: 99px; margin: 1.5rem 0;
+    background: var(--mosaic);
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--sec);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.4rem 1.4rem;
+    margin: 0 0 1.25rem;
+  }
+
+  h2 {
+    font-size: 1.4rem; letter-spacing: -.015em;
+    margin: 0 0 .2rem; display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap;
+  }
+  .num {
+    display: inline-grid; place-items: center; flex: none;
+    width: 1.8rem; height: 1.8rem; border-radius: 6px;
+    background: var(--sec); color: var(--on-sec);
+    font: 700 1rem/1 inherit; align-self: center;
+  }
+  .clock {
+    font: 700 .72rem/1 inherit; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--gold-ink); background: var(--warn-bg); border-radius: 99px; padding: .32rem .65rem;
+    white-space: nowrap;
+  }
+  h2 + .lede { color: var(--ink-dim); margin: .1rem 0 1rem; }
+  h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .12em;
+       color: var(--sec-ink); margin: 1.5rem 0 .6rem; }
+
+  ol.clicks { margin: 0; padding-left: 1.6rem; }
+  ol.clicks > li { margin: .45rem 0; }
+  ol.clicks > li::marker { color: var(--sec-ink); font-weight: 700; }
+  ol.clicks ul { margin: .3rem 0; padding-left: 1.1rem; }
+  kbd {
+    font: 600 .85em/1 ui-monospace, "SF Mono", Menlo, monospace;
+    background: var(--bg); border: 1px solid var(--line);
+    border-bottom-width: 2px; border-radius: 5px; padding: .17em .42em; white-space: nowrap;
+  }
+  b.ui { font-weight: 650; }
+
+  .say { background: var(--say-bg); border-left: 4px solid var(--say-line);
+         border-radius: 8px; padding: 1rem 1.1rem; margin: .9rem 0; }
+  .say .tag { font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+              text-transform: uppercase; color: var(--say-ink); display: block; margin-bottom: .45rem; }
+  .say p { margin: 0; font-size: 1.12rem; line-height: 1.5; }
+  .say.small p { font-size: 1rem; }
+  .row { display: flex; gap: .5rem; align-items: center; margin-top: .85rem; flex-wrap: wrap; }
+
+  button {
+    font: 600 .9rem/1 inherit; color: var(--on-sec); background: var(--sec);
+    border: 0; border-radius: 8px; padding: .5rem .85rem; cursor: pointer;
+  }
+  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  button:hover { filter: brightness(1.08); }
+  button:focus-visible, input:focus-visible, summary:focus-visible, a:focus-visible {
+    outline: 3px solid var(--teal); outline-offset: 2px;
+  }
+  .hint { font-size: .85rem; color: var(--ink-dim); }
+  a { color: var(--link); }
+
+  ul.check { list-style: none; margin: 0; padding: 0; }
+  ul.check li { margin: .1rem 0; }
+  ul.check label {
+    display: flex; gap: .65rem; align-items: flex-start;
+    padding: .4rem .5rem; border-radius: 7px; cursor: pointer;
+  }
+  ul.check label:hover { background: var(--bg); }
+  ul.check input { margin: .35rem 0 0; width: 1.05rem; height: 1.05rem; flex: none; accent-color: var(--sec); }
+  ul.check input:checked + span { color: var(--ink-dim); text-decoration: line-through; text-decoration-thickness: 1px; }
+
+  .moment { background: var(--warn-bg); border-left: 4px solid var(--warn-line);
+            border-radius: 8px; padding: .9rem 1.1rem; margin: 1rem 0; }
+  .moment strong { color: var(--gold-ink); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: .5rem; font-size: .95rem; }
+  th, td { text-align: left; padding: .6rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: .76rem; text-transform: uppercase; letter-spacing: .1em; color: var(--sec-ink); }
+  td.fix { width: 55%; }
+  td.fix q { font-style: normal; }
+
+  nav.stepnav {
+    display: flex; gap: .6rem; align-items: center; flex-wrap: wrap;
+    padding-top: .25rem;
+  }
+  nav.stepnav .tick { font-size: .85rem; color: var(--ink-dim); margin-left: auto; }
+  nav.stepnav .tick.all { color: var(--good-ink); font-weight: 650; }
+  nav.stepnav .next { background: var(--blue); color: var(--cream); }
+  nav.stepnav .next .lbl { font-weight: 700; }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  footer { color: var(--ink-dim); font-size: .85rem; margin-top: 2rem; text-align: center; }
+  footer button { margin-top: .5rem; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    section.step.on { animation: rise .18s ease-out; }
+    @keyframes rise { from { transform: translateY(7px); } to { transform: none; } }
+  }
+
+  @media print {
+    :root { --bg:#fff; --card:#fff; --line:#c9bda9; --say-bg:#f7f2ea; --warn-bg:#f7f2ea;
+            --ink:#000; --ink-dim:#4a4335; }
+    body { padding: 0; font-size: 11pt; }
+    .toolbar, nav.stepnav, button, .crumb, .hint.noprint { display: none !important; }
+    section.step { display: block !important; }
+    .hero-wrap { padding: 0; margin-bottom: 1rem; }
+    .card { break-inside: avoid; page-break-inside: avoid; border-radius: 0; }
+    a { text-decoration: none; color: #000; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="toolbar">
+  <div class="brand">Ambassadors Barcelona ’26</div>
+  <ol class="stepper" id="stepper" aria-label="Session steps"></ol>
+  <div class="tools">
+    <span class="hint">Clock <span id="elapsed">00:00</span></span>
+    <button id="timerBtn" class="ghost" type="button">Start</button>
+    <button id="helpBtn" class="ghost" type="button">If it goes wrong</button>
+  </div>
+</div>
+
+<p class="crumb" id="crumb"></p>
+
+<section class="step s-taupe" id="welcome" tabindex="-1" data-title="Welcome" data-short="Start">
+  <header class="top">
+    <div class="hero-wrap">
+      <img class="hero" src="hero-banner.png" width="2880" height="720"
+           alt="Apple Ambassadors — Barcelona, September 22–24, 2026">
+    </div>
+    <p class="eyebrow">Hands-on session · 45 minutes</p>
+    <h1>Mac Initiative Builder</h1>
+    <p class="sub">Build a Mac app by talking to it — three jobs, a look of your own,
+    forty-five minutes, no code, and the customer's words never leave the laptop.</p>
+  </header>
+
+  <div class="card">
+    <h2>What you're building</h2>
+    <p class="lede">An app that records a sales conversation, pulls out the key points, and drafts
+    the follow-up email — all on this MacBook, with the Wi-Fi off.</p>
+    <p>You won't write any code. You'll describe what you want and Xcode's assistant will build it.
+    Say each sentence out loud if you can — the dictation is on-device too, which is the same thing
+    you're selling. Every pair's window should look different on the gallery wall; this Mac already
+    has a seed (title, colour, a customer in a particular industry). At the end you'll push that further.</p>
+    <h3>How this guide works</h3>
+    <ol class="clicks">
+      <li>One step per screen. Work through it, tick the boxes, then press <b class="ui">Next</b>.</li>
+      <li>Arrow keys <kbd>←</kbd> <kbd>→</kbd> also move between steps.</li>
+      <li>Stuck at any point? <b class="ui">If it goes wrong</b>, top right — it brings you
+          back where you were.</li>
+      <li>Start the clock in the top bar when your facilitator says go.</li>
+      <li>If you're on the contest website, keep this tab open. You'll turn Wi-Fi off later;
+          the steps stay here.</li>
+    </ol>
+  </div>
+</section>
+
+<section class="step s-taupe" id="setup" tabindex="-1" data-title="Set up" data-short="Set up">
+  <div class="card">
+    <h2>Set up <span class="clock">0:00 – 0:04</span></h2>
+    <p class="lede">Four minutes. Get the half-built app running, then wake up the assistant.</p>
+
+    <ol class="clicks">
+      <li>On the Desktop, open the <b class="ui">Starter</b> folder and double-click
+          <b class="ui">Ambassadors26.xcodeproj</b>. Xcode opens.</li>
+      <li>Click the <b class="ui">▶ Run</b> button, top-left (or press <kbd>⌘R</kbd>).
+          Wait for the app window to appear.</li>
+      <li>In the app, click <b class="ui">Use sample</b>. Notes from a fake customer fill
+          the left pane. The window title and colour on this Mac may not match the projector
+          — that's your pair's seed, on purpose.</li>
+      <li>Click <b class="ui">Build initiative</b>. <em>Nothing happens.</em> That's your job today.</li>
+      <li>Leave the app running. Back in Xcode, open the <b class="ui">Coding Assistant</b>
+          panel. (Your facilitator will show you where it is.)</li>
+      <li>Paste the sentence below into the assistant and press <kbd>↩</kbd>.
+          It should reply <b class="ui">ready</b>. Skip this if it already said it is following
+          <b class="ui">AGENTS.md</b>.</li>
+    </ol>
+
+    <div class="say small">
+      <span class="tag">Paste this once — type it, don't dictate it</span>
+      <p id="p0">Read AGENTS.md, Ambassadors26/BUILD-SPEC.md, and SEED.md. Follow them whenever I ask for something, and prefer the exact APIs they name. Reply with just “ready”.</p>
+      <div class="row">
+        <button type="button" data-copy="p0">Copy</button>
+        <span class="hint">This points the assistant at the project's build notes, so everything
+        after this can be plain English.</span>
+      </div>
+    </div>
+
+    <h3>Before you move on</h3>
+    <ul class="check">
+      <li><label><input type="checkbox"><span>The app window opened and <b class="ui">Use sample</b> filled in the notes</span></label></li>
+      <li><label><input type="checkbox"><span>The assistant replied <b class="ui">ready</b>, or already knew the spec</span></label></li>
+    </ul>
+  </div>
+</section>
+
+<section class="step s-blue" id="think" tabindex="-1" data-title="Key points" data-short="Points">
+  <div class="card">
+    <h2><span class="num">1</span> Pull out the key points <span class="clock">0:04 – 0:16</span></h2>
+    <p class="lede">Right now the button does nothing. One sentence from you and it'll read the
+    notes and give you fields you could drop into a CRM.</p>
+
+    <div class="say">
+      <span class="tag">Say this</span>
+      <p id="p1">There are notes from a sales call in the left-hand pane. Make the Build initiative button actually read them and give me proper fields I could drop straight into our CRM, with how urgent this customer is right at the top — and all of it has to happen on this Mac, nothing leaves the laptop.</p>
+      <div class="row">
+        <button type="button" data-copy="p1">Copy</button>
+        <span class="hint">To dictate: <b class="ui">Edit ▸ Start Dictation</b>, say it, then stop
+        dictation and press <kbd>↩</kbd>.</span>
+      </div>
+    </div>
+
+    <h3>Then, click by click</h3>
+    <ol class="clicks">
+      <li>Wait while it works. It will write several files — a minute or two is normal.</li>
+      <li>When it's finished, glance at what it changed. You're not checking the code, only that
+          it did what you asked.</li>
+      <li>Press <b class="ui">▶ Run</b> again (<kbd>⌘R</kbd>).
+          <ul><li>If Xcode shows a red error instead, use <a href="#stuck">If it goes wrong</a>.</li></ul></li>
+      <li>Click <b class="ui">Use sample</b>, then <b class="ui">Build initiative</b>.</li>
+      <li>Watch for the spinner and <b class="ui">Analyzing…</b>, then a coloured urgency badge and
+          six labelled fields in the middle pane.</li>
+    </ol>
+
+    <div class="moment">
+      <strong>Now the moment worth remembering.</strong> Click the Wi-Fi icon in the menu bar and
+      <strong>turn Wi-Fi off completely.</strong> Change a word in the notes. Click
+      <b class="ui">Build initiative</b> again. It still works — because the model is on this
+      laptop, not in somebody else's cloud.
+    </div>
+
+    <h3>Before you move on</h3>
+    <ul class="check">
+      <li><label><input type="checkbox"><span>An urgency badge appeared — usually <b class="ui">High</b>, in red, for these notes</span></label></li>
+      <li><label><input type="checkbox"><span>Six labelled fields that clearly read the sample notes (not a generic waffle)</span></label></li>
+      <li><label><input type="checkbox"><span>It still worked with the Wi-Fi switched off</span></label></li>
+    </ul>
+  </div>
+</section>
+
+<section class="step s-teal" id="email" tabindex="-1" data-title="Follow-up email" data-short="Email">
+  <div class="card">
+    <h2><span class="num">2</span> Write the follow-up <span class="clock">0:18 – 0:28</span></h2>
+    <p class="lede">Turn the recommendation into an email you could actually send. Wi-Fi can stay off.</p>
+
+    <div class="moment">
+      <strong>Behind schedule?</strong> If the clock is already past 0:28, still say the next
+      sentence (Record) so the button exists, then screenshot using <b class="ui">Use sample</b>.
+      A complete three-pane window beats a broken recording.
+    </div>
+
+    <div class="say">
+      <span class="tag">Say this</span>
+      <p id="p2">Good. Now write the follow-up email I’d actually send this customer after that conversation, and let me copy it or open it in Mail.</p>
+      <div class="row">
+        <button type="button" data-copy="p2">Copy</button>
+      </div>
+    </div>
+
+    <h3>Then, click by click</h3>
+    <ol class="clicks">
+      <li>Wait for it to finish, then press <b class="ui">▶ Run</b> (<kbd>⌘R</kbd>).</li>
+      <li>Click <b class="ui">Use sample</b>, then <b class="ui">Build initiative</b>.</li>
+      <li>The middle pane fills in first. A moment later the right-hand pane spins and the email
+          appears — that's a second piece of thinking, on the same laptop.</li>
+      <li>Click <b class="ui">Copy</b>, then paste it into any note to check the layout.</li>
+      <li>Click <b class="ui">Open in Mail</b>. A draft opens, subject and body already filled in.</li>
+    </ol>
+
+    <h3>Before you move on</h3>
+    <ul class="check">
+      <li><label><input type="checkbox"><span>An email appeared with a subject line and proper paragraphs</span></label></li>
+      <li><label><input type="checkbox"><span><b class="ui">Copy</b> pasted a properly laid-out email</span></label></li>
+      <li><label><input type="checkbox"><span><b class="ui">Open in Mail</b> opened a filled-in draft</span></label></li>
+    </ul>
+  </div>
+</section>
+
+<section class="step s-green" id="record" tabindex="-1" data-title="Record the call" data-short="Record">
+  <div class="card">
+    <h2><span class="num">3</span> Record the call <span class="clock">0:28 – 0:36</span></h2>
+    <p class="lede">Stop typing notes. Let the app listen, on this Mac.</p>
+
+    <div class="say">
+      <span class="tag">Say this</span>
+      <p id="p3">I don’t want to type my notes. Let me just talk to it and have it write them down while I’m speaking — and again, all on this Mac.</p>
+      <div class="row">
+        <button type="button" data-copy="p3">Copy</button>
+      </div>
+    </div>
+
+    <h3>Then, click by click</h3>
+    <ol class="clicks">
+      <li>Wait for it to finish, then press <b class="ui">▶ Run</b> (<kbd>⌘R</kbd>).</li>
+      <li>You should now have a <b class="ui">Record call</b> button beside <b class="ui">Use sample</b>.</li>
+      <li>Click <b class="ui">Use sample</b> so you can see this session's customer.</li>
+      <li>Click <b class="ui">Record call</b>. If macOS asks for the microphone, click
+          <b class="ui">OK</b>. Then speak a sentence in <em>that</em> world — hospital,
+          campus, shop, bank, whatever the sample is. There is a line in
+          <b class="ui">SEED.md</b> in the Starter folder. A hospital version:</li>
+    </ol>
+
+    <div class="say small">
+      <span class="tag">Hospital fallback — only if your sample is healthcare</span>
+      <p id="p4">They’ve got about three hundred Windows laptops, most of them four years old. The help desk is drowning. And they’re nervous about patient data leaving the building.</p>
+      <div class="row"><button type="button" data-copy="p4">Copy</button></div>
+    </div>
+
+    <ol class="clicks" start="5">
+      <li>Words should appear <em>as you speak</em>, not after you stop.</li>
+      <li>Click <b class="ui">Stop recording</b>, then <b class="ui">Build initiative</b>.</li>
+    </ol>
+
+    <div class="moment">
+      <strong>Microphone not working?</strong> Don't spend five minutes on it. Click
+      <b class="ui">Use sample</b>, build the initiative, and go to Make it yours. Staff will not
+      debug microphone settings in the last minutes of the session.
+    </div>
+
+    <h3>Before you move on</h3>
+    <ul class="check">
+      <li><label><input type="checkbox"><span>A <b class="ui">Record call</b> button appeared</span></label></li>
+      <li><label><input type="checkbox"><span>Either: words appeared while I was talking, <em>or</em> I used sample notes instead</span></label></li>
+      <li><label><input type="checkbox"><span>Build initiative still filled the middle and right panes</span></label></li>
+    </ul>
+  </div>
+</section>
+
+<section class="step s-taupe" id="yours" tabindex="-1" data-title="Make it yours" data-short="Look">
+  <div class="card">
+    <h2><span class="num">4</span> Make it yours <span class="clock">0:36 – 0:41</span></h2>
+    <p class="lede">The judges will see a wall of three-pane windows. Same jobs, different
+    personality. This sentence is what stops yours looking like everyone else's.</p>
+
+    <div class="say">
+      <span class="tag">Say this</span>
+      <p id="p5">This has to stand out on a wall of screenshots. Keep every button working, but give the window a look that is obviously ours — start from SEED.md and go further if you like.</p>
+      <div class="row">
+        <button type="button" data-copy="p5">Copy</button>
+        <span class="hint">Behind? Skip this sentence. The seed already changed the title, colour,
+        and customer. Still screenshot with all three panes filled.</span>
+      </div>
+    </div>
+
+    <h3>Then, click by click</h3>
+    <ol class="clicks">
+      <li>Wait for it to finish, then press <b class="ui">▶ Run</b> (<kbd>⌘R</kbd>).</li>
+      <li>You should still have notes, an initiative, and an email — plus a look that isn't
+          default grey.</li>
+    </ol>
+
+    <h3>Before you move on</h3>
+    <ul class="check">
+      <li><label><input type="checkbox"><span>Use sample, Record, Build initiative, Copy, and Open in Mail still work</span></label></li>
+      <li><label><input type="checkbox"><span>The window has a colour, title, or personality we would recognise as ours</span></label></li>
+    </ul>
+  </div>
+</section>
+
+<section class="step s-gold" id="submit" tabindex="-1" data-title="Submit" data-short="Submit">
+  <div class="card">
+    <h2>Submit your screenshot <span class="clock">0:41 – 0:45</span></h2>
+    <p class="lede">The app stays on this Mac. The screenshot goes to the room gallery so staff
+    can judge by looking. They are scoring three panes of working app <em>and</em> a look
+    that isn't a clone of the next pair's.</p>
+
+    <div class="moment">
+      <strong>Turn Wi-Fi back on</strong> before you open Safari. Analysis already happened on
+      the laptop. Uploading a screenshot is a later, deliberate step — like photographing a
+      whiteboard.
+    </div>
+
+    <h3>Capture the window</h3>
+    <ol class="clicks">
+      <li>Arrange the app so all three panes show content: notes, the urgency badge and fields,
+          and the email.</li>
+      <li>Press <kbd>⌘⇧4</kbd>, then tap <kbd>Space</kbd>. The cursor becomes a camera.</li>
+      <li>Click the app window. A PNG lands on the Desktop.</li>
+    </ol>
+    <p class="hint">Crop the <em>window</em>, not the whole desktop. An empty middle pane is an
+    incomplete submission.</p>
+
+    <h3>Upload it</h3>
+    <ol class="clicks">
+      <li>If you started on the contest website, stay on that tab — the upload form is on this step.
+          Turn Wi-Fi back on first.</li>
+      <li>If you're on this local file instead, open
+          <a class="gallery-url" href="https://gallery-production-85f3.up.railway.app/">https://gallery-production-85f3.up.railway.app/</a>,
+          enter the same team name and PIN, and upload there.</li>
+      <li>You should see your window on the wall.</li>
+    </ol>
+
+    <h3>Before you move on</h3>
+    <ul class="check">
+      <li><label><input type="checkbox"><span>Screenshot shows notes, initiative fields, the email, and a look that isn't default grey</span></label></li>
+      <li><label><input type="checkbox"><span>It appeared on the gallery wall</span></label></li>
+    </ul>
+  </div>
+</section>
+
+<section class="step s-blue" id="why" tabindex="-1" data-title="Why that worked" data-short="Why">
+  <div class="card">
+    <h2>Why that worked <span class="clock">0:43 – 0:45</span></h2>
+    <p>Your sentences were short, but the app still came out right. That's not mind-reading —
+    there's a file in the project called <b class="ui">BUILD-SPEC.md</b> (and
+    <b class="ui">AGENTS.md</b>) holding the detail you didn't say: which Apple frameworks to use,
+    that it must never call the internet, and which of two similar-looking speech technologies is
+    the current one.</p>
+    <p><strong>Somebody wrote that file, once.</strong> Write the brief down properly a single time,
+    and from then on everyone can ask for what they want in plain English. The seed and the last
+    sentence are the same idea: same spec, different personality.</p>
+    <p>The on-device model is small and fast. It's excellent at pulling structure out of messy notes.
+    It will not write your account strategy. Don't sell it as more than that.</p>
+    <hr class="mosaic">
+    <p class="hint">Two more sentences to try later are in <code>STRETCH.md</code>.
+    Facilitators: see <a href="#facilitator">facilitator notes</a>.</p>
+  </div>
+</section>
+
+<section class="step s-gold" id="stuck" tabindex="-1" data-title="If it goes wrong" data-ref="1">
+  <div class="card">
+    <h2>If it goes wrong</h2>
+    <p class="lede">All of this is normal. Say the fix out loud, the same as everything else —
+    you don't need to understand the error.</p>
+    <table>
+      <thead><tr><th>What you're seeing</th><th class="fix">What to say</th></tr></thead>
+      <tbody>
+        <tr><td>Xcode shows a red error</td><td class="fix">Copy the error text, paste it in, and add <q>fix this</q></td></tr>
+        <tr><td>It built something odd</td><td class="fix"><q>Have another look at BUILD-SPEC.md — that isn't what it asks for.</q></td></tr>
+        <tr><td>It asked you for an API key or an account</td><td class="fix"><q>No. This has to run on the Mac, on device. No network calls.</q></td></tr>
+        <tr><td>Something that used to work has stopped</td><td class="fix"><q>You've broken something that was working — put it back.</q></td></tr>
+        <tr><td>The button does nothing at all</td><td class="fix"><q>I clicked Build initiative and nothing happened.</q></td></tr>
+        <tr><td>Two attempts have failed</td><td class="fix">In Terminal, from the Starter folder: <kbd>git checkout .</kbd> — that rewinds to the start. Then say the sentence again.</td></tr>
+        <tr><td>A notice about Apple Intelligence being unavailable</td><td class="fix">Not your fault and not fixable here. Put your hand up.</td></tr>
+        <tr><td>Dictation garbled your sentence</td><td class="fix">Use the <b class="ui">Copy</b> button instead and move on. Don't lose two minutes to it.</td></tr>
+        <tr><td>It used the old speech API / words only appear after you stop</td><td class="fix"><q>Have another look at BUILD-SPEC.md — section 3. Use SpeechAnalyzer, not SFSpeechRecognizer. I want the words to appear while I'm still talking.</q></td></tr>
+        <tr><td>The site says that team name is already in</td><td class="fix">That's fine if it's yours — use the same name and PIN to resume. Otherwise pick a different name.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="step s-taupe" id="facilitator" tabindex="-1" data-title="Facilitator notes" data-ref="1">
+  <div class="card">
+    <h2>Facilitator notes</h2>
+    <p><strong>Run sheet.</strong> 0:00 join on the website, then setup · 0:04 key points · 0:16 Wi-Fi off · 0:18 email ·
+    0:28 record · 0:36 make it yours · 0:41 Wi-Fi on, screenshot on this tab. Hard checkpoint at 0:28:
+    anyone not through the email still says the Record sentence, then screenshots with sample notes.
+    Behind at 0:36? Skip “make it yours” — the seed already differentiates the window.</p>
+    <p><strong>Between pairs.</strong> Double-click <code>scripts/Reset Workshop.command</code>.
+    It rewinds the project, picks a new look, and clears these ticks. The gallery is not touched.
+    Open a fresh Coding Assistant chat before the next pair sits down.</p>
+    <p><strong>Pre-flight, days ahead, on every machine.</strong> Apple Intelligence on and fully
+    downloaded; Xcode 27 with the Coding Assistant signed in; dictation on and tested inside the
+    assistant field; <code>Starter/</code> on the Desktop and run once to warm the build; the
+    finished app in <code>../Ambassadors26</code> run once <em>including the record button</em>,
+    to pre-download speech assets; gallery URL and event PIN on the projector; ~30 GB free.</p>
+    <p><strong>The one thing that sinks this session</strong> is a room of Macs downloading
+    on-device speech assets on conference Wi-Fi. Pre-download.</p>
+    <p>Full notes are in <code>FACILITATOR.md</code>.</p>
+    <div class="row">
+      <button id="resetBtn" class="ghost" type="button">Reset all ticks</button>
+      <span class="hint">Clears the checklist on this machine, ready for the next pair.</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Mac Initiative Builder · Apple Ambassadors Barcelona · 22–24 September 2026 ·
+  analysis runs on-device; the screenshot is uploaded afterwards.
+  <span class="hint noprint">Tip: <kbd>⌘P</kbd> prints every step as a handout.</span>
+</footer>
+
+<p class="sr" role="status" aria-live="polite" id="live"></p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var KEY = "mib-codealong-v1";
+  var POS = "mib-codealong-pos";
+  var live = document.getElementById("live");
+  var hashReset = location.hash.slice(1) === "reset";
+  if (hashReset) {
+    try {
+      localStorage.removeItem(KEY);
+      localStorage.removeItem(POS);
+    } catch (e) {}
+  }
+
+  function copy(text, btn) {
+    function ok() {
+      var was = btn.textContent;
+      btn.textContent = "Copied";
+      live.textContent = "Copied to clipboard";
+      setTimeout(function () { btn.textContent = was; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(ok, legacy);
+    } else { legacy(); }
+    function legacy() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.top = "-1000px";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); ok(); }
+      catch (e) { btn.textContent = "Select it and press ⌘C"; }
+      document.body.removeChild(ta);
+    }
+  }
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-copy]");
+    if (!btn) return;
+    var src = document.getElementById(btn.getAttribute("data-copy"));
+    if (src) copy(src.textContent.trim(), btn);
+  });
+
+  var steps = [].slice.call(document.querySelectorAll("section.step"));
+  var main = steps.filter(function (s) { return !s.dataset.ref; });
+  var index = {};
+  steps.forEach(function (s, i) { index[s.id] = i; });
+  var current = 0, returnTo = null;
+
+  var stepper = document.getElementById("stepper");
+  main.forEach(function (s, i) {
+    var li = document.createElement("li");
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "pill";
+    b.dataset.go = s.id;
+    b.innerHTML = '<span class="n">' + (i + 1) + '</span><span class="t"></span>';
+    b.querySelector(".t").textContent = s.dataset.short || s.dataset.title;
+    b.title = s.dataset.title;
+    li.appendChild(b);
+    stepper.appendChild(li);
+    s.dataset.pos = i + 1;
+  });
+
+  steps.forEach(function (s) {
+    var nav = document.createElement("nav");
+    nav.className = "stepnav";
+
+    var back = document.createElement("button");
+    back.type = "button";
+    back.className = "ghost back";
+    nav.appendChild(back);
+
+    var next = document.createElement("button");
+    next.type = "button";
+    next.className = "next";
+    nav.appendChild(next);
+
+    var tick = document.createElement("span");
+    tick.className = "tick";
+    nav.appendChild(tick);
+
+    s.appendChild(nav);
+  });
+
+  function boxesIn(s) {
+    return [].slice.call(s.querySelectorAll("ul.check input[type=checkbox]"));
+  }
+
+  function paintNav(s) {
+    var nav = s.querySelector("nav.stepnav");
+    var back = nav.querySelector(".back");
+    var next = nav.querySelector(".next");
+    var tick = nav.querySelector(".tick");
+
+    if (s.dataset.ref) {
+      var home = steps[returnTo == null ? 0 : returnTo];
+      back.textContent = "← Back to " + (returnTo == null ? "the start" : home.dataset.title);
+      back.dataset.go = home.id;
+      back.hidden = false;
+      var other = steps.filter(function (x) { return x.dataset.ref && x !== s; })[0];
+      if (other) { next.textContent = other.dataset.title + " →"; next.dataset.go = other.id; next.hidden = false; }
+      else { next.hidden = true; }
+      tick.textContent = "";
+      return;
+    }
+
+    var pos = main.indexOf(s);
+    if (pos > 0) {
+      back.hidden = false;
+      back.textContent = "← " + main[pos - 1].dataset.title;
+      back.dataset.go = main[pos - 1].id;
+    } else { back.hidden = true; }
+
+    if (pos < main.length - 1) {
+      next.hidden = false;
+      next.innerHTML = '<span class="lbl"></span>';
+      next.querySelector(".lbl").textContent =
+        (pos === 0 ? "Start: " : "Next: ") + main[pos + 1].dataset.title + " →";
+      next.dataset.go = main[pos + 1].id;
+    } else {
+      next.hidden = false;
+      next.textContent = "Back to the start ↺";
+      next.dataset.go = main[0].id;
+    }
+
+    var bs = boxesIn(s);
+    if (!bs.length) { tick.textContent = ""; return; }
+    var n = bs.filter(function (b) { return b.checked; }).length;
+    tick.textContent = n + " of " + bs.length + " ticked";
+    tick.className = "tick" + (n === bs.length ? " all" : "");
+  }
+
+  var crumb = document.getElementById("crumb");
+
+  function show(id, push) {
+    var i = index[id];
+    if (i == null) return;
+    var s = steps[i];
+    if (s.dataset.ref && !steps[current].dataset.ref) returnTo = current;
+    current = i;
+
+    steps.forEach(function (x) { x.classList.toggle("on", x === s); });
+
+    [].slice.call(stepper.querySelectorAll(".pill")).forEach(function (p) {
+      if (p.dataset.go === id) p.setAttribute("aria-current", "step");
+      else p.removeAttribute("aria-current");
+    });
+
+    if (s.dataset.ref) {
+      crumb.innerHTML = "Reference · <b></b>";
+      crumb.querySelector("b").textContent = s.dataset.title;
+    } else {
+      crumb.innerHTML = "Step " + s.dataset.pos + " of " + main.length + " · <b></b>";
+      crumb.querySelector("b").textContent = s.dataset.title;
+    }
+
+    paintNav(s);
+    if (!s.dataset.ref) { try { localStorage.setItem(POS, id); } catch (e) {} }
+    if (push !== false && location.hash !== "#" + id) {
+      try { history.replaceState(null, "", "#" + id); } catch (e) { location.hash = id; }
+    }
+    window.scrollTo(0, 0);
+    s.focus();
+    live.textContent = s.dataset.title;
+    reportProgress();
+  }
+
+  document.addEventListener("click", function (e) {
+    var go = e.target.closest("[data-go]");
+    if (go) { e.preventDefault(); show(go.dataset.go, true); return; }
+    var a = e.target.closest('a[href^="#"]');
+    if (a && index[a.getAttribute("href").slice(1)] != null) {
+      e.preventDefault(); show(a.getAttribute("href").slice(1), true);
+    }
+  });
+
+  document.getElementById("helpBtn").addEventListener("click", function () { show("stuck", true); });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+    var here = steps[current];
+    var pos = main.indexOf(here);
+    if (e.key === "ArrowRight" && pos > -1 && pos < main.length - 1) { show(main[pos + 1].id, true); }
+    else if (e.key === "ArrowLeft" && pos > 0) { show(main[pos - 1].id, true); }
+    else return;
+    e.preventDefault();
+  });
+
+  window.addEventListener("hashchange", function () {
+    var id = location.hash.slice(1);
+    if (index[id] != null && id !== steps[current].id) show(id, false);
+  });
+
+  var boxes = [].slice.call(document.querySelectorAll("ul.check input[type=checkbox]"));
+  boxes.forEach(function (b, i) { b.dataset.k = "b" + i; });
+
+  var saved = {};
+  if (window.__SERVER_TICKS__ && typeof window.__SERVER_TICKS__ === "object") {
+    saved = window.__SERVER_TICKS__;
+  } else {
+    try { saved = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { saved = {}; }
+  }
+
+  function persist() {
+    var out = {};
+    boxes.forEach(function (b) { if (b.checked) out[b.dataset.k] = 1; });
+    try { localStorage.setItem(KEY, JSON.stringify(out)); } catch (e) {}
+    reportProgress();
+  }
+  function reportProgress() {
+    if (typeof window.onExerciseProgress !== "function") return;
+    var out = {};
+    boxes.forEach(function (b) { if (b.checked) out[b.dataset.k] = 1; });
+    var step = steps[current] ? steps[current].id : "";
+    window.onExerciseProgress({ step: step, ticks: out });
+  }
+  function paintDone() {
+    main.forEach(function (s) {
+      var bs = boxesIn(s);
+      var done = bs.length > 0 && bs.every(function (b) { return b.checked; });
+      var pill = stepper.querySelector('.pill[data-go="' + s.id + '"]');
+      if (pill) {
+        pill.classList.toggle("done", done);
+        pill.querySelector(".n").textContent = done ? "✓" : s.dataset.pos;
+      }
+    });
+  }
+  boxes.forEach(function (b) {
+    if (saved[b.dataset.k]) b.checked = true;
+    b.addEventListener("change", function () {
+      persist(); paintDone();
+      var own = b.closest("section.step");
+      if (own) paintNav(own);
+    });
+  });
+  paintDone();
+
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    boxes.forEach(function (b) { b.checked = false; });
+    persist(); paintDone();
+    main.forEach(paintNav);
+    live.textContent = "Checklist cleared";
+  });
+
+  var startId = location.hash.slice(1);
+  if (hashReset || index[startId] == null) {
+    if (window.__SERVER_STEP__ && index[window.__SERVER_STEP__] != null) startId = window.__SERVER_STEP__;
+    else { try { startId = localStorage.getItem(POS); } catch (e) {} }
+  }
+  if (index[startId] == null) startId = steps[0].id;
+  show(startId, true);
+
+  var t0 = null, tick = null, out = document.getElementById("elapsed"), btn = document.getElementById("timerBtn");
+  function paint() {
+    var s = Math.floor((Date.now() - t0) / 1000);
+    var m = Math.floor(s / 60);
+    out.textContent = (m < 10 ? "0" : "") + m + ":" + (s % 60 < 10 ? "0" : "") + (s % 60);
+  }
+  btn.addEventListener("click", function () {
+    if (tick) {
+      clearInterval(tick); tick = null; btn.textContent = "Start";
+      live.textContent = "Clock stopped";
+    } else {
+      t0 = Date.now() - (function () {
+        var p = out.textContent.split(":");
+        return (parseInt(p[0], 10) * 60 + parseInt(p[1], 10)) * 1000;
+      })();
+      paint(); tick = setInterval(paint, 1000); btn.textContent = "Pause";
+      live.textContent = "Clock started";
+    }
+  });
+})();
+</script>
+</body>
+</html>
