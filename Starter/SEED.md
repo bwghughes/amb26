@@ -1,14 +1,14 @@
-# This session's look — Clinic linen
+# This session's look — Lab bench
 
 The three panes and the three jobs stay the same: notes, structured key points,
 follow-up email, then live recording. The personality below is what makes this
 pair's screenshot different from the next pair's.
 
-- **Title:** Ward Initiative
-- **Industry:** healthcare
-- **Accent:** SwiftUI `Color(red: 0.12, green: 0.45, blue: 0.55)`
-- **Empty-state symbol:** `cross.case.fill`
-- **How it should feel:** Soft teal accent, plenty of whitespace, clinical and calm. Keep the three panes.
+- **Title:** Lab Brief
+- **Industry:** life sciences
+- **Accent:** SwiftUI `Color(red: 0.42, green: 0.22, blue: 0.62)`
+- **Empty-state symbol:** `atom`
+- **How it should feel:** Violet accent, precise layout, a bit of lab-coat polish. Keep the three panes.
 
 Use the sample notes already in `ContentView.swift`. Do not replace them with
 the healthcare laptop story unless this seed *is* healthcare.
@@ -19,4 +19,4 @@ flatten it back to default grey.
 
 ## Line to speak into Record call
 
-They've got about three hundred Windows laptops, most of them four years old. The help desk is drowning. And they're nervous about patient data leaving the building.
+Twenty-five bench PCs. The notebook is in a US cloud and QA hates it. People photograph gels on their phones. Patient-derived samples cannot leave the building.

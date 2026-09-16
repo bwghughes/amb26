@@ -10,7 +10,7 @@ and the event PIN, and work through the steps there. The same copy lives in
 screenshot from that tab.
 
 Staff notes: [FACILITATOR.md](FACILITATOR.md). Copy-paste commands:
-[COMMANDS.md](COMMANDS.md). Take-home: [STRETCH.md](STRETCH.md). What to say, as plain
+[COMMANDS.md](COMMANDS.md). MDM owner: [MDM.md](MDM.md). Take-home: [STRETCH.md](STRETCH.md). What to say, as plain
 text: [prompts.txt](prompts.txt). After a pair leaves, **Reset** that Mac on the
 staff dashboard (agent installed on each contest machine), or double-click
 [`scripts/Reset Workshop.command`](scripts/Reset%20Workshop.command).
@@ -26,7 +26,7 @@ at the last step. Staff watch live progress at `/admin` and judge the wall.
 - Event PIN (rehearsal): `ondevice`
 - Staff PIN (rehearsal): `staff`
 - Agent secret (rehearsal): `workshop-reset`
-- Contest Mac setup: `curl -fsSL https://ambassadors26.up.railway.app/install | bash`
+- Contest Mac setup (Xcode already on the machine): `curl -fsSL https://ambassadors26.up.railway.app/install | bash`
 
 The gallery app is [`leaderboard/`](leaderboard/). Update the live URL here, in
 `exercise.html`, and in `FACILITATOR.md` if the Railway domain changes.
@@ -45,5 +45,6 @@ The gallery app is [`leaderboard/`](leaderboard/). Update the live URL here, in
 | [leaderboard/](leaderboard/) | Contest site (join, exercise, admin, wall) |
 | [FACILITATOR.md](FACILITATOR.md) | Pre-flight and run sheet |
 | [COMMANDS.md](COMMANDS.md) | Reset, rescue, seed — copy-paste |
+| [MDM.md](MDM.md) | IT / Jamf: Codex API key on contest Macs |
 | [prompts.txt](prompts.txt) | Everything to say, for the day |
 | `../Ambassadors26` | Finished Mac app — staff answer key, not for the pairs |

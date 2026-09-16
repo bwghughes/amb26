@@ -5,6 +5,7 @@ Rehearse against a clock. There is no slack in it.
 The pairs only need the contest website (team name + event PIN, then the steps).
 [exercise.html](exercise.html) is the offline fallback. Copy-paste for reset, rescue,
 and seeding is in [COMMANDS.md](COMMANDS.md).
+MDM owner: see [MDM.md](MDM.md).
 
 ## Run sheet
 
@@ -35,12 +36,21 @@ A grey clone of the projector demo is an incomplete submission even if the field
 
 - [ ] macOS 27, Xcode 27, opened once with components installed.
 - [ ] Apple Intelligence **on and fully downloaded**. It pulls several GB in the background and reports "unavailable" until it's finished.
-- [ ] Xcode's Coding Assistant signed in and working — send it a throwaway prompt and confirm it can edit a file.
+- [ ] Xcode's Coding Assistant signed in and working — Codex should be the
+      Intelligence agent after install. Send a throwaway prompt and confirm it
+      can edit a file.
 - [ ] **Dictation on and tested** (System Settings → Keyboard → Dictation). Confirm the shortcut works in Xcode's assistant field.
-- [ ] `Starter/` copied to the Desktop, **opened in Xcode and run once** — warms the build so their first rebuild is seconds, not a minute.
-- [ ] **Workshop agent installed** on every contest Mac:
+- [ ] **MDM has delivered** `OPENAI_API_KEY` or `CODEX_API_KEY` on every
+      contest Mac (`launchctl getenv OPENAI_API_KEY` works, or managed prefs
+      domain `com.openai.codex`). Do not curl the key on the command line.
+- [ ] **Workshop pack + agent + Codex** on every contest Mac (Xcode already installed):
       `curl -fsSL https://ambassadors26.up.railway.app/install | bash`
-      Confirm each Computer Name appears under Workshop Macs on `/admin`.
+      That clones the repo, puts `Starter` on the Desktop, starts the agent,
+      and installs Codex for Xcode Intelligence from the MDM key. Confirm each
+      Computer Name appears under Workshop Macs on `/admin`. Reopen Xcode
+      after install. If the script warns that MDM has not delivered the key,
+      fix the profile and re-run the same curl.
+- [ ] `~/Desktop/Starter` **opened in Xcode and run once** — warms the build so their first rebuild is seconds, not a minute. First Xcode launch may install extra components; first `.command` script may need Right-click → Open.
 - [ ] **Reset Workshop run once before doors** (dashboard **Reset all**, or `scripts/Reset Workshop.command`) so the first pair is not all on hospital grey.
 - [ ] The finished app (`../Ambassadors26`) built and run once too, **including the record button** — pre-downloads the speech assets. Twenty Macs doing that on conference Wi-Fi is how you lose the session.
 - [ ] ~30 GB free disk.
@@ -118,5 +128,8 @@ Do not use `git clean -x`. Do not `git reset --hard` this repo. Do not run reset
 pair is still working — it destroys their project. The first time on a machine, macOS may
 ask you to allow the script.
 
-Primary Mac setup is `curl -fsSL https://ambassadors26.up.railway.app/install | bash`.
-Uninstall and the double-click fallback are in [COMMANDS.md](COMMANDS.md).
+Primary Mac setup is
+`curl -fsSL https://ambassadors26.up.railway.app/install | bash`
+(from-scratch: repo, Desktop `Starter`, LaunchAgent, Codex for Xcode
+Intelligence). The API key comes from MDM, not from that curl. Uninstall and
+the double-click fallback are in [COMMANDS.md](COMMANDS.md).

@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mac Initiative Builder — 45-minute exercise · Apple Ambassadors Barcelona 2026</title>
+<meta name="color-scheme" content="light dark">
+<title>Mac Initiative Builder — Apple Ambassadors Barcelona 2026</title>
 <style>
   :root {
     --cream: #fef6ed;
@@ -31,7 +32,9 @@
     --sec: var(--blue);
     --sec-ink: #175f83;
     --on-sec: var(--cream);
-    --radius: 14px;
+    --radius: 16px;
+    --header-pad: 2rem;
+    --measure: 42rem;
   }
   .s-blue  { --sec: var(--blue);  --sec-ink: #175f83; --on-sec: var(--cream); }
   .s-teal  { --sec: var(--teal);  --sec-ink: #16707a; --on-sec: #0f1c23; }
@@ -66,77 +69,123 @@
   html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
-    padding: 0 1.25rem 4rem;
+    padding: 0 0 max(3.5rem, env(safe-area-inset-bottom));
     background: var(--bg);
     color: var(--ink);
-    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    font: 21px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
   }
-  .wrap { max-width: 46rem; margin: 0 auto; }
-
-  .toolbar {
-    position: sticky; top: 0; z-index: 5; margin: 0 -1.25rem 1.5rem;
-    padding: .55rem 1.25rem .75rem;
-    background: color-mix(in srgb, var(--bg) 90%, transparent);
-    backdrop-filter: saturate(160%) blur(10px);
-    display: flex; gap: .75rem 1rem; align-items: center; justify-content: space-between;
-    flex-wrap: wrap;
+  .skip {
+    position: absolute; left: .75rem; top: .75rem;
+    z-index: 20; padding: .55rem .8rem;
+    background: var(--blue); color: var(--cream); border-radius: 8px;
+    text-decoration: none; font-weight: 700;
+    transform: translateY(-150%);
   }
-  .toolbar::after {
-    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
+  .skip:focus { transform: none; }
+  .site-header {
+    position: sticky; top: 0; z-index: 8;
+    background: color-mix(in srgb, var(--card) 92%, transparent);
+    backdrop-filter: saturate(160%) blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .site-header::after {
+    content: ""; display: block; height: 5px;
     background: var(--mosaic);
   }
-  .brand {
-    font: 700 .68rem/1 inherit; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--ink-dim); white-space: nowrap;
+  .header-bar, .crumbs, .wrap, .flash {
+    width: min(86rem, 100%);
+    margin-left: auto; margin-right: auto;
+    padding-left: max(var(--header-pad), env(safe-area-inset-left));
+    padding-right: max(var(--header-pad), env(safe-area-inset-right));
   }
-  .tools { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
-  #elapsed { font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: .04em; color: var(--gold-ink); }
-
-  ol.stepper {
-    display: flex; gap: .3rem; flex-wrap: wrap; align-items: center;
-    list-style: none; margin: 0; padding: 0; flex: 1 1 18rem;
+  .header-bar {
+    display: flex; align-items: center; gap: 1rem 1.75rem; flex-wrap: wrap;
+    padding-top: .9rem; padding-bottom: .65rem;
   }
-  .pill {
+  .brand-block { min-width: 0; }
+  .header-title {
+    margin: 0; font-size: 1.7rem; font-weight: 800; letter-spacing: -.02em;
+    line-height: 1.15; text-wrap: balance;
+  }
+  .header-sub { margin: .2rem 0 0; color: var(--ink-dim); font-size: 1.05rem; }
+  .team-slot {
+    display: flex; align-items: center; gap: .55rem 1rem; flex-wrap: wrap;
+    min-width: 0; flex: 1 1 16rem;
+    font-size: 1.1rem;
+    padding-left: 1.1rem;
+    border-left: 2px solid var(--line);
+  }
+  .team-slot[hidden] { display: none !important; }
+  .team-slot strong { font-size: 1.2rem; }
+  .team-slot a, .team-slot .linkish {
+    color: var(--link); font: inherit; background: none; border: 0;
+    padding: .35rem 0; cursor: pointer; text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .header-tools {
+    display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+    margin-left: auto;
+  }
+  .clock-read {
+    font-variant-numeric: tabular-nums; font-weight: 700;
+    color: var(--gold-ink); letter-spacing: .03em; white-space: nowrap;
+  }
+  .crumbs { padding-top: .15rem; padding-bottom: .75rem; }
+  .crumbs ol {
+    display: flex; flex-wrap: wrap; align-items: center;
+    list-style: none; margin: 0; padding: 0; gap: .1rem 0;
+  }
+  .crumbs li { display: flex; align-items: center; }
+  .crumbs li:not(:last-child)::after {
+    content: "›"; color: var(--ink-dim); font-size: 1.35rem;
+    padding: 0 .35rem; font-weight: 500; line-height: 1;
+  }
+  .crumb-link {
     display: flex; align-items: center; gap: .4rem;
-    background: transparent; border: 1px solid var(--line); border-radius: 99px;
-    color: var(--ink-dim); font: 600 .78rem/1 inherit;
-    padding: .34rem .6rem .34rem .34rem; cursor: pointer;
+    background: transparent; border: 0; border-radius: 8px;
+    color: var(--ink-dim); font: 650 1.05rem/1.15 inherit;
+    padding: .45rem .55rem; min-height: 2.65rem; cursor: pointer;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
-  .pill .n {
-    display: grid; place-items: center; width: 1.25rem; height: 1.25rem; flex: none;
-    border-radius: 99px; background: var(--line); color: var(--ink);
-    font: 700 .7rem/1 inherit;
+  .crumb-link .n {
+    display: grid; place-items: center; flex: none;
+    width: 1.6rem; height: 1.6rem; border-radius: 99px;
+    background: var(--line); color: var(--ink);
+    font: 700 .8rem/1 inherit;
   }
-  .pill:hover { border-color: var(--sec); }
-  .pill[aria-current="step"] {
-    color: var(--on-sec); background: var(--sec); border-color: var(--sec);
+  .crumb-link .t-short { display: none; }
+  .crumb-link:hover { color: var(--ink); background: var(--bg); }
+  .crumb-link[aria-current="step"] {
+    color: var(--ink);
+    background: color-mix(in srgb, var(--teal) 24%, var(--card));
   }
-  .pill[aria-current="step"] .n { background: rgba(255,255,255,.28); color: var(--on-sec); }
-  .pill.done .n { background: var(--good); color: #0f1c23; }
-  .pill.done[aria-current="step"] .n { background: rgba(255,255,255,.28); }
-  @media (max-width: 42rem) { .pill .t { display: none; } .pill { padding: .34rem; } }
+  .crumb-link[aria-current="step"] .n { background: var(--teal); color: #0f1c23; }
+  .crumb-link.done .n { background: var(--good); color: #0f1c23; }
+  .crumb-link.done[aria-current="step"] .n { background: var(--teal); }
+  @media (max-width: 72rem) {
+    .crumb-link .t-full { display: none; }
+    .crumb-link .t-short { display: inline; }
+  }
 
-  .crumb { font-size: .85rem; color: var(--ink-dim); margin: 0 0 .75rem; }
-  .crumb b { color: var(--ink); }
-
-  section.step { display: none; }
+  .wrap { padding-top: 1.5rem; }
+  .flash { padding-top: 1rem; }
+  section.step { display: none; scroll-margin-top: 8.5rem; }
   section.step.on { display: block; }
   section.step:focus { outline: none; }
 
   .hero-wrap {
     background: var(--cream); border-radius: var(--radius);
-    padding: .25rem .75rem; margin: 0 0 1.5rem;
+    padding: .25rem .75rem; margin: 0 0 1.25rem;
   }
   img.hero { display: block; width: 100%; height: auto; }
-  header.top { padding: .25rem 0 1rem; text-align: center; }
-  h1 { font-size: 2.15rem; line-height: 1.12; margin: 0 0 .35rem; letter-spacing: -.025em; }
-  .sub { color: var(--ink-dim); font-size: 1.05rem; margin: 0 auto; max-width: 34rem; }
-  .eyebrow {
-    font: 700 .74rem/1 inherit; letter-spacing: .16em; text-transform: uppercase;
-    color: var(--gold-ink); margin: 0 0 .7rem;
+  header.top { padding: .15rem 0 1rem; }
+  h1 {
+    font-size: 2.5rem; line-height: 1.12; margin: 0 0 .4rem;
+    letter-spacing: -.025em; text-wrap: balance;
   }
+  .sub { color: var(--ink-dim); font-size: 1.2rem; margin: 0; max-width: 40rem; }
 
-  :root, .mosaic, .toolbar {
+  :root, .mosaic, .site-header {
     --mosaic:
       repeating-linear-gradient(90deg,
         var(--blue) 0 15px, transparent 15px 18px,
@@ -156,105 +205,192 @@
   .card {
     background: var(--card);
     border: 1px solid var(--line);
-    border-top: 3px solid var(--sec);
+    border-top: 4px solid var(--sec);
     border-radius: var(--radius);
-    padding: 1.25rem 1.4rem 1.4rem;
+    padding: 1.5rem 1.6rem 1.6rem;
     margin: 0 0 1.25rem;
+  }
+  .step-grid {
+    display: grid; grid-template-columns: 1fr; gap: 1.35rem;
+  }
+  @media (min-width: 64rem) {
+    .step-grid {
+      grid-template-columns: minmax(0, 1.15fr) minmax(22rem, 0.95fr);
+      gap: 2rem; align-items: start;
+    }
+    .step-side { position: sticky; top: 9rem; }
   }
 
   h2 {
-    font-size: 1.4rem; letter-spacing: -.015em;
-    margin: 0 0 .2rem; display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap;
+    font-size: 1.85rem; letter-spacing: -.015em; text-wrap: balance;
+    margin: 0 0 .25rem; display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap;
   }
   .num {
     display: inline-grid; place-items: center; flex: none;
-    width: 1.8rem; height: 1.8rem; border-radius: 6px;
+    width: 2rem; height: 2rem; border-radius: 7px;
     background: var(--sec); color: var(--on-sec);
-    font: 700 1rem/1 inherit; align-self: center;
+    font: 700 1.05rem/1 inherit; align-self: center;
   }
   .clock {
-    font: 700 .72rem/1 inherit; letter-spacing: .1em; text-transform: uppercase;
-    color: var(--gold-ink); background: var(--warn-bg); border-radius: 99px; padding: .32rem .65rem;
+    font: 700 .8rem/1 inherit; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--gold-ink); background: var(--warn-bg); border-radius: 99px; padding: .4rem .75rem;
     white-space: nowrap;
   }
-  h2 + .lede { color: var(--ink-dim); margin: .1rem 0 1rem; }
-  h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .12em;
-       color: var(--sec-ink); margin: 1.5rem 0 .6rem; }
+  h2 + .lede { color: var(--ink-dim); margin: .15rem 0 1.1rem; font-size: 1.1rem; }
+  h3 {
+    font-size: 1.05rem; font-weight: 750; letter-spacing: 0;
+    text-transform: none; color: var(--sec-ink); margin: 1.35rem 0 .55rem;
+  }
 
-  ol.clicks { margin: 0; padding-left: 1.6rem; }
-  ol.clicks > li { margin: .45rem 0; }
+  ol.clicks { margin: 0; padding-left: 1.7rem; }
+  ol.clicks > li { margin: .55rem 0; }
   ol.clicks > li::marker { color: var(--sec-ink); font-weight: 700; }
   ol.clicks ul { margin: .3rem 0; padding-left: 1.1rem; }
   kbd {
-    font: 600 .85em/1 ui-monospace, "SF Mono", Menlo, monospace;
+    font: 650 .9em/1 ui-monospace, "SF Mono", Menlo, monospace;
     background: var(--bg); border: 1px solid var(--line);
-    border-bottom-width: 2px; border-radius: 5px; padding: .17em .42em; white-space: nowrap;
+    border-bottom-width: 2px; border-radius: 5px; padding: .2em .45em; white-space: nowrap;
   }
-  b.ui { font-weight: 650; }
+  b.ui { font-weight: 700; }
 
-  .say { background: var(--say-bg); border-left: 4px solid var(--say-line);
-         border-radius: 8px; padding: 1rem 1.1rem; margin: .9rem 0; }
-  .say .tag { font-size: .72rem; font-weight: 700; letter-spacing: .12em;
-              text-transform: uppercase; color: var(--say-ink); display: block; margin-bottom: .45rem; }
-  .say p { margin: 0; font-size: 1.12rem; line-height: 1.5; }
-  .say.small p { font-size: 1rem; }
-  .row { display: flex; gap: .5rem; align-items: center; margin-top: .85rem; flex-wrap: wrap; }
+  .say {
+    background: var(--say-bg); border-left: 5px solid var(--say-line);
+    border-radius: 10px; padding: 1.1rem 1.2rem; margin: 0 0 1rem;
+  }
+  .say .tag {
+    font-size: .85rem; font-weight: 750; letter-spacing: .04em;
+    color: var(--say-ink); display: block; margin-bottom: .45rem;
+  }
+  .say p { margin: 0; font-size: 1.15rem; line-height: 1.5; text-wrap: pretty; }
+  .row { display: flex; gap: .55rem; align-items: center; margin-top: .85rem; flex-wrap: wrap; }
 
   button {
-    font: 600 .9rem/1 inherit; color: var(--on-sec); background: var(--sec);
-    border: 0; border-radius: 8px; padding: .5rem .85rem; cursor: pointer;
+    font: 650 1.05rem/1 inherit; color: var(--on-sec); background: var(--sec);
+    border: 0; border-radius: 10px; padding: .75rem 1.05rem; min-height: 2.85rem;
+    cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    transition: background-color .15s ease, border-color .15s ease, opacity .15s ease;
   }
   button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
-  button:hover { filter: brightness(1.08); }
-  button:focus-visible, input:focus-visible, summary:focus-visible, a:focus-visible {
+  button:hover { background: color-mix(in srgb, var(--sec) 88%, #000); }
+  button.ghost:hover { background: var(--bg); border-color: var(--sec); }
+  button:focus-visible, input:focus-visible, summary:focus-visible, a:focus-visible, .crumb-link:focus-visible, .dropzone:focus-within {
     outline: 3px solid var(--teal); outline-offset: 2px;
   }
-  .hint { font-size: .85rem; color: var(--ink-dim); }
+  .hint { font-size: 1rem; color: var(--ink-dim); }
   a { color: var(--link); }
 
   ul.check { list-style: none; margin: 0; padding: 0; }
-  ul.check li { margin: .1rem 0; }
+  ul.check li { margin: .15rem 0; }
   ul.check label {
-    display: flex; gap: .65rem; align-items: flex-start;
-    padding: .4rem .5rem; border-radius: 7px; cursor: pointer;
+    display: flex; gap: .7rem; align-items: flex-start;
+    padding: .55rem .6rem; border-radius: 8px; cursor: pointer;
   }
   ul.check label:hover { background: var(--bg); }
-  ul.check input { margin: .35rem 0 0; width: 1.05rem; height: 1.05rem; flex: none; accent-color: var(--sec); }
+  ul.check input {
+    margin: .3rem 0 0; width: 1.35rem; height: 1.35rem; flex: none;
+    accent-color: var(--sec);
+  }
   ul.check input:checked + span { color: var(--ink-dim); text-decoration: line-through; text-decoration-thickness: 1px; }
 
-  .moment { background: var(--warn-bg); border-left: 4px solid var(--warn-line);
-            border-radius: 8px; padding: .9rem 1.1rem; margin: 1rem 0; }
+  .moment {
+    background: var(--warn-bg); border-left: 5px solid var(--warn-line);
+    border-radius: 10px; padding: 1rem 1.15rem; margin: 0 0 1rem;
+  }
   .moment strong { color: var(--gold-ink); }
 
-  table { width: 100%; border-collapse: collapse; margin-top: .5rem; font-size: .95rem; }
-  th, td { text-align: left; padding: .6rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
-  th { font-size: .76rem; text-transform: uppercase; letter-spacing: .1em; color: var(--sec-ink); }
+  table { width: 100%; border-collapse: collapse; margin-top: .5rem; }
+  th, td { text-align: left; padding: .7rem .55rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: .9rem; font-weight: 750; color: var(--sec-ink); }
   td.fix { width: 55%; }
   td.fix q { font-style: normal; }
 
   nav.stepnav {
-    display: flex; gap: .6rem; align-items: center; flex-wrap: wrap;
-    padding-top: .25rem;
+    display: flex; gap: .65rem; align-items: center; flex-wrap: wrap;
+    padding-top: .15rem;
   }
-  nav.stepnav .tick { font-size: .85rem; color: var(--ink-dim); margin-left: auto; }
-  nav.stepnav .tick.all { color: var(--good-ink); font-weight: 650; }
+  nav.stepnav .tick { font-size: 1.05rem; color: var(--ink-dim); margin-left: auto; }
+  nav.stepnav .tick.all { color: var(--good-ink); font-weight: 700; }
   nav.stepnav .next { background: var(--blue); color: var(--cream); }
-  nav.stepnav .next .lbl { font-weight: 700; }
+  nav.stepnav .next .lbl { font-weight: 750; }
+
+  .play-only { display: none !important; }
+  html.play .play-only { display: block !important; }
+  html.play button.play-only { display: block !important; }
+  html.play .local-only { display: none !important; }
+
+  .dropzone {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: .45rem; min-height: 18rem; padding: 1.6rem 1.3rem;
+    border: 5px dashed var(--gold); border-radius: 18px;
+    background: #fff1c9; color: var(--ink);
+    cursor: pointer; text-align: center;
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  .dropzone-input {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
+  }
+  .dropzone:hover { border-color: var(--blue); background: #e8f4f5; }
+  .dropzone.dragover {
+    border-style: solid; border-color: var(--teal); background: #c8eef1;
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--teal) 40%, transparent);
+  }
+  .dropzone.has-file {
+    border-style: solid; border-color: var(--green); background: var(--card); min-height: 0;
+  }
+  .dropzone-idle {
+    display: flex; flex-direction: column; align-items: center; gap: .4rem;
+    width: 100%;
+  }
+  .dropzone-icon { width: 4.75rem; height: 4.75rem; color: var(--gold-ink); }
+  .dropzone-title { display: block; font-size: 1.55rem; font-weight: 800; line-height: 1.2; text-wrap: balance; }
+  .dropzone-es { display: block; font-size: 1.2rem; font-weight: 700; color: var(--gold-ink); }
+  .dropzone-hint { display: block; font-size: 1.05rem; color: var(--ink-dim); }
+  .dropzone-preview { display: none; width: 100%; }
+  .dropzone.has-file .dropzone-idle { display: none; }
+  .dropzone.has-file .dropzone-preview { display: block; }
+  .dropzone-preview img {
+    display: block; width: 100%; height: auto; max-height: 18rem;
+    object-fit: contain; border-radius: 10px; background: #0f1c23;
+  }
+  .dropzone-file { display: block; margin-top: .6rem; font-size: 1rem; color: var(--ink-dim); word-break: break-word; }
+  .dropzone-submit {
+    display: none; width: 100%; margin-top: .9rem;
+    font-size: 1.2rem; font-weight: 750; padding: 1rem 1.2rem; min-height: 3.4rem;
+    background: var(--blue); color: var(--cream); border-radius: 12px;
+  }
+  html.play .dropzone-submit { display: block; }
+  .dropzone-submit:disabled { opacity: .5; cursor: not-allowed; }
+  #play-upload h3 { margin-top: 0; }
+
+  .error, .ok {
+    border-radius: 10px; padding: .9rem 1.1rem; margin: 0 0 1rem; font-size: 1.1rem;
+  }
+  .error { background: var(--warn-bg); border-left: 5px solid var(--gold); }
+  .ok { background: var(--say-bg); border-left: 5px solid var(--teal); }
 
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  footer { color: var(--ink-dim); font-size: .85rem; margin-top: 2rem; text-align: center; }
+  footer { color: var(--ink-dim); font-size: 1rem; margin-top: 2rem; text-align: center; }
   footer button { margin-top: .5rem; }
 
+  @media (prefers-color-scheme: dark) {
+    .dropzone { background: #2a2416; border-color: var(--gold-light); }
+    .dropzone:hover, .dropzone.dragover { background: #16323a; }
+  }
   @media (prefers-reduced-motion: no-preference) {
     section.step.on { animation: rise .18s ease-out; }
     @keyframes rise { from { transform: translateY(7px); } to { transform: none; } }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    button, .dropzone { transition: none; }
   }
 
   @media print {
     :root { --bg:#fff; --card:#fff; --line:#c9bda9; --say-bg:#f7f2ea; --warn-bg:#f7f2ea;
             --ink:#000; --ink-dim:#4a4335; }
     body { padding: 0; font-size: 11pt; }
-    .toolbar, nav.stepnav, button, .crumb, .hint.noprint { display: none !important; }
+    .site-header, nav.stepnav, button, .hint.noprint, .skip { display: none !important; }
     section.step { display: block !important; }
     .hero-wrap { padding: 0; margin-bottom: 1rem; }
     .card { break-inside: avoid; page-break-inside: avoid; border-radius: 0; }
@@ -263,19 +399,26 @@
 </style>
 </head>
 <body>
-<div class="wrap">
-
-<div class="toolbar">
-  <div class="brand">Ambassadors Barcelona ’26</div>
-  <ol class="stepper" id="stepper" aria-label="Session steps"></ol>
-  <div class="tools">
-    <span class="hint">Clock <span id="elapsed">00:00</span></span>
-    <button id="timerBtn" class="ghost" type="button">Start</button>
-    <button id="helpBtn" class="ghost" type="button">If it goes wrong</button>
+<a class="skip" href="#main">Skip to steps</a>
+<header class="site-header">
+  <div class="header-bar">
+    <div class="brand-block">
+      <p class="header-title">Mac Initiative Builder</p>
+      <p class="header-sub">Apple Ambassadors · Barcelona 2026</p>
+    </div>
+    <div id="team-slot" class="team-slot" hidden></div>
+    <div class="header-tools">
+      <span class="clock-read">Clock <span id="elapsed">00:00</span></span>
+      <button id="timerBtn" class="ghost" type="button">Start</button>
+      <button id="helpBtn" class="ghost" type="button">Help · Ayuda</button>
+    </div>
   </div>
-</div>
+  <nav class="crumbs" aria-label="Session steps">
+    <ol id="stepper"></ol>
+  </nav>
+</header>
 
-<p class="crumb" id="crumb"></p>
+<div class="wrap" id="main">
 
 <section class="step s-taupe" id="welcome" tabindex="-1" data-title="Welcome" data-short="Start">
   <header class="top">
@@ -283,313 +426,296 @@
       <img class="hero" src="hero-banner.png" width="2880" height="720"
            alt="Apple Ambassadors — Barcelona, September 22–24, 2026">
     </div>
-    <p class="eyebrow">Hands-on session · 45 minutes</p>
-    <h1>Mac Initiative Builder</h1>
-    <p class="sub">Build a Mac app by talking to it — three jobs, a look of your own,
-    forty-five minutes, no code, and the customer's words never leave the laptop.</p>
+    <h1>Build a Mac app by talking</h1>
+    <p class="sub">45 minutes. No code. The customer’s words stay on this laptop.</p>
   </header>
 
   <div class="card">
-    <h2>What you're building</h2>
-    <p class="lede">An app that records a sales conversation, pulls out the key points, and drafts
-    the follow-up email — all on this MacBook, with the Wi-Fi off.</p>
-    <p>You won't write any code. You'll describe what you want and Xcode's assistant will build it.
-    Say each sentence out loud if you can — the dictation is on-device too, which is the same thing
-    you're selling. Every pair's window should look different on the gallery wall; this Mac already
-    has a seed (title, colour, a customer in a particular industry). At the end you'll push that further.</p>
-    <h3>How this guide works</h3>
-    <ol class="clicks">
-      <li>One step per screen. Work through it, tick the boxes, then press <b class="ui">Next</b>.</li>
-      <li>Arrow keys <kbd>←</kbd> <kbd>→</kbd> also move between steps.</li>
-      <li>Stuck at any point? <b class="ui">If it goes wrong</b>, top right — it brings you
-          back where you were.</li>
-      <li>Start the clock in the top bar when your facilitator says go.</li>
-      <li>If you're on the contest website, keep this tab open. You'll turn Wi-Fi off later;
-          the steps stay here.</li>
-    </ol>
+    <div class="step-grid">
+      <div class="step-main">
+        <h2>What you will build</h2>
+        <ol class="clicks">
+          <li>Read notes from a sales call.</li>
+          <li>Pull out the key points.</li>
+          <li>Write the follow-up email.</li>
+        </ol>
+        <p>You describe what you want. Xcode builds it. Each pair’s window should look different.</p>
+      </div>
+      <div class="step-side">
+        <h3>How this page works</h3>
+        <ol class="clicks">
+          <li>Do one step. Tick the boxes. Press <b class="ui">Next</b>.</li>
+          <li>Keys <kbd>←</kbd> <kbd>→</kbd> also move.</li>
+          <li>Stuck? <b class="ui">Help · Ayuda</b> at the top.</li>
+          <li>Start the clock when your host says go.</li>
+        </ol>
+      </div>
+    </div>
   </div>
 </section>
 
 <section class="step s-taupe" id="setup" tabindex="-1" data-title="Set up" data-short="Set up">
   <div class="card">
     <h2>Set up <span class="clock">0:00 – 0:04</span></h2>
-    <p class="lede">Four minutes. Get the half-built app running, then wake up the assistant.</p>
-
-    <ol class="clicks">
-      <li>On the Desktop, open the <b class="ui">Starter</b> folder and double-click
-          <b class="ui">Ambassadors26.xcodeproj</b>. Xcode opens.</li>
-      <li>Click the <b class="ui">▶ Run</b> button, top-left (or press <kbd>⌘R</kbd>).
-          Wait for the app window to appear.</li>
-      <li>In the app, click <b class="ui">Use sample</b>. Notes from a fake customer fill
-          the left pane. The window title and colour on this Mac may not match the projector
-          — that's your pair's seed, on purpose.</li>
-      <li>Click <b class="ui">Build initiative</b>. <em>Nothing happens.</em> That's your job today.</li>
-      <li>Leave the app running. Back in Xcode, open the <b class="ui">Coding Assistant</b>
-          panel. (Your facilitator will show you where it is.)</li>
-      <li>Paste the sentence below into the assistant and press <kbd>↩</kbd>.
-          It should reply <b class="ui">ready</b>. Skip this if it already said it is following
-          <b class="ui">AGENTS.md</b>.</li>
-    </ol>
-
-    <div class="say small">
-      <span class="tag">Paste this once — type it, don't dictate it</span>
-      <p id="p0">Read AGENTS.md, Ambassadors26/BUILD-SPEC.md, and SEED.md. Follow them whenever I ask for something, and prefer the exact APIs they name. Reply with just “ready”.</p>
-      <div class="row">
-        <button type="button" data-copy="p0">Copy</button>
-        <span class="hint">This points the assistant at the project's build notes, so everything
-        after this can be plain English.</span>
+    <p class="lede">Open the half-built app. Wake the assistant.</p>
+    <div class="step-grid">
+      <div class="step-main">
+        <ol class="clicks">
+          <li>On the Desktop, open <b class="ui">Starter</b>. Double-click <b class="ui">Ambassadors26.xcodeproj</b>.</li>
+          <li>Click <b class="ui">▶ Run</b> (or <kbd>⌘R</kbd>). Wait for the app window.</li>
+          <li>In the app, click <b class="ui">Use sample</b>. Fake notes fill the left pane.</li>
+          <li>Click <b class="ui">Build initiative</b>. Nothing happens. That is today’s job.</li>
+          <li>Leave the app open. In Xcode, open <b class="ui">Coding Assistant</b>.</li>
+          <li>Paste the text on the right. Press <kbd>↩</kbd>. It should reply <b class="ui">ready</b>.</li>
+        </ol>
+        <h3>Tick these</h3>
+        <ul class="check">
+          <li><label><input type="checkbox"><span>App window opened. <b class="ui">Use sample</b> filled the notes</span></label></li>
+          <li><label><input type="checkbox"><span>Assistant said <b class="ui">ready</b>, or already knew the spec</span></label></li>
+        </ul>
+      </div>
+      <div class="step-side">
+        <div class="say">
+          <span class="tag">Paste this · Pega esto</span>
+          <p id="p0">Read AGENTS.md, Ambassadors26/BUILD-SPEC.md, and SEED.md. Follow them whenever I ask for something, and prefer the exact APIs they name. Reply with just “ready”.</p>
+          <div class="row">
+            <button type="button" data-copy="p0">Copy · Copiar</button>
+          </div>
+        </div>
       </div>
     </div>
-
-    <h3>Before you move on</h3>
-    <ul class="check">
-      <li><label><input type="checkbox"><span>The app window opened and <b class="ui">Use sample</b> filled in the notes</span></label></li>
-      <li><label><input type="checkbox"><span>The assistant replied <b class="ui">ready</b>, or already knew the spec</span></label></li>
-    </ul>
   </div>
 </section>
 
 <section class="step s-blue" id="think" tabindex="-1" data-title="Key points" data-short="Points">
   <div class="card">
     <h2><span class="num">1</span> Pull out the key points <span class="clock">0:04 – 0:16</span></h2>
-    <p class="lede">Right now the button does nothing. One sentence from you and it'll read the
-    notes and give you fields you could drop into a CRM.</p>
-
-    <div class="say">
-      <span class="tag">Say this</span>
-      <p id="p1">There are notes from a sales call in the left-hand pane. Make the Build initiative button actually read them and give me proper fields I could drop straight into our CRM, with how urgent this customer is right at the top — and all of it has to happen on this Mac, nothing leaves the laptop.</p>
-      <div class="row">
-        <button type="button" data-copy="p1">Copy</button>
-        <span class="hint">To dictate: <b class="ui">Edit ▸ Start Dictation</b>, say it, then stop
-        dictation and press <kbd>↩</kbd>.</span>
+    <p class="lede">The button does nothing. One sentence makes it read the notes.</p>
+    <div class="step-grid">
+      <div class="step-main">
+        <ol class="clicks">
+          <li>Wait. It will write files. One or two minutes is normal.</li>
+          <li>Press <b class="ui">▶ Run</b> again (<kbd>⌘R</kbd>).
+            <ul><li>Red error? Open <a href="#stuck">Help · Ayuda</a>.</li></ul></li>
+          <li>Click <b class="ui">Use sample</b>, then <b class="ui">Build initiative</b>.</li>
+          <li>Look for <b class="ui">Analyzing…</b>, then a colour badge and six fields.</li>
+        </ol>
+        <div class="moment">
+          <strong>Wi-Fi off.</strong> Click the Wi-Fi icon. Turn Wi-Fi off. Change one word in the notes. Click <b class="ui">Build initiative</b> again. It still works. The model is on this Mac.
+        </div>
+        <h3>Tick these</h3>
+        <ul class="check">
+          <li><label><input type="checkbox"><span>Urgency badge appeared (often <b class="ui">High</b>, in red)</span></label></li>
+          <li><label><input type="checkbox"><span>Six labelled fields match the notes</span></label></li>
+          <li><label><input type="checkbox"><span>It worked with Wi-Fi off</span></label></li>
+        </ul>
+      </div>
+      <div class="step-side">
+        <div class="say">
+          <span class="tag">Say this · Di esto</span>
+          <p id="p1">There are notes from a sales call in the left-hand pane. Make the Build initiative button actually read them and give me proper fields I could drop straight into our CRM, with how urgent this customer is right at the top — and all of it has to happen on this Mac, nothing leaves the laptop.</p>
+          <div class="row">
+            <button type="button" data-copy="p1">Copy · Copiar</button>
+            <span class="hint"><b class="ui">Edit ▸ Start Dictation</b>, then <kbd>↩</kbd>.</span>
+          </div>
+        </div>
       </div>
     </div>
-
-    <h3>Then, click by click</h3>
-    <ol class="clicks">
-      <li>Wait while it works. It will write several files — a minute or two is normal.</li>
-      <li>When it's finished, glance at what it changed. You're not checking the code, only that
-          it did what you asked.</li>
-      <li>Press <b class="ui">▶ Run</b> again (<kbd>⌘R</kbd>).
-          <ul><li>If Xcode shows a red error instead, use <a href="#stuck">If it goes wrong</a>.</li></ul></li>
-      <li>Click <b class="ui">Use sample</b>, then <b class="ui">Build initiative</b>.</li>
-      <li>Watch for the spinner and <b class="ui">Analyzing…</b>, then a coloured urgency badge and
-          six labelled fields in the middle pane.</li>
-    </ol>
-
-    <div class="moment">
-      <strong>Now the moment worth remembering.</strong> Click the Wi-Fi icon in the menu bar and
-      <strong>turn Wi-Fi off completely.</strong> Change a word in the notes. Click
-      <b class="ui">Build initiative</b> again. It still works — because the model is on this
-      laptop, not in somebody else's cloud.
-    </div>
-
-    <h3>Before you move on</h3>
-    <ul class="check">
-      <li><label><input type="checkbox"><span>An urgency badge appeared — usually <b class="ui">High</b>, in red, for these notes</span></label></li>
-      <li><label><input type="checkbox"><span>Six labelled fields that clearly read the sample notes (not a generic waffle)</span></label></li>
-      <li><label><input type="checkbox"><span>It still worked with the Wi-Fi switched off</span></label></li>
-    </ul>
   </div>
 </section>
 
-<section class="step s-teal" id="email" tabindex="-1" data-title="Follow-up email" data-short="Email">
+<section class="step s-teal" id="email" tabindex="-1" data-title="Email" data-short="Email">
   <div class="card">
     <h2><span class="num">2</span> Write the follow-up <span class="clock">0:18 – 0:28</span></h2>
-    <p class="lede">Turn the recommendation into an email you could actually send. Wi-Fi can stay off.</p>
-
-    <div class="moment">
-      <strong>Behind schedule?</strong> If the clock is already past 0:28, still say the next
-      sentence (Record) so the button exists, then screenshot using <b class="ui">Use sample</b>.
-      A complete three-pane window beats a broken recording.
-    </div>
-
-    <div class="say">
-      <span class="tag">Say this</span>
-      <p id="p2">Good. Now write the follow-up email I’d actually send this customer after that conversation, and let me copy it or open it in Mail.</p>
-      <div class="row">
-        <button type="button" data-copy="p2">Copy</button>
+    <p class="lede">Turn the notes into an email you could send. Wi-Fi can stay off.</p>
+    <div class="step-grid">
+      <div class="step-main">
+        <div class="moment">
+          <strong>Clock past 0:28?</strong> Still say the Record sentence so the button exists. Then take the screenshot with <b class="ui">Use sample</b>.
+        </div>
+        <ol class="clicks">
+          <li>Wait. Then press <b class="ui">▶ Run</b> (<kbd>⌘R</kbd>).</li>
+          <li>Click <b class="ui">Use sample</b>, then <b class="ui">Build initiative</b>.</li>
+          <li>Middle pane fills first. Then the email appears on the right.</li>
+          <li>Click <b class="ui">Copy</b>. Paste it into a note to check it.</li>
+          <li>Click <b class="ui">Open in Mail</b>. A draft opens.</li>
+        </ol>
+        <h3>Tick these</h3>
+        <ul class="check">
+          <li><label><input type="checkbox"><span>Email has a subject and paragraphs</span></label></li>
+          <li><label><input type="checkbox"><span><b class="ui">Copy</b> pasted a real email</span></label></li>
+          <li><label><input type="checkbox"><span><b class="ui">Open in Mail</b> opened a filled draft</span></label></li>
+        </ul>
+      </div>
+      <div class="step-side">
+        <div class="say">
+          <span class="tag">Say this · Di esto</span>
+          <p id="p2">Good. Now write the follow-up email I’d actually send this customer after that conversation, and let me copy it or open it in Mail.</p>
+          <div class="row">
+            <button type="button" data-copy="p2">Copy · Copiar</button>
+          </div>
+        </div>
       </div>
     </div>
-
-    <h3>Then, click by click</h3>
-    <ol class="clicks">
-      <li>Wait for it to finish, then press <b class="ui">▶ Run</b> (<kbd>⌘R</kbd>).</li>
-      <li>Click <b class="ui">Use sample</b>, then <b class="ui">Build initiative</b>.</li>
-      <li>The middle pane fills in first. A moment later the right-hand pane spins and the email
-          appears — that's a second piece of thinking, on the same laptop.</li>
-      <li>Click <b class="ui">Copy</b>, then paste it into any note to check the layout.</li>
-      <li>Click <b class="ui">Open in Mail</b>. A draft opens, subject and body already filled in.</li>
-    </ol>
-
-    <h3>Before you move on</h3>
-    <ul class="check">
-      <li><label><input type="checkbox"><span>An email appeared with a subject line and proper paragraphs</span></label></li>
-      <li><label><input type="checkbox"><span><b class="ui">Copy</b> pasted a properly laid-out email</span></label></li>
-      <li><label><input type="checkbox"><span><b class="ui">Open in Mail</b> opened a filled-in draft</span></label></li>
-    </ul>
   </div>
 </section>
 
-<section class="step s-green" id="record" tabindex="-1" data-title="Record the call" data-short="Record">
+<section class="step s-green" id="record" tabindex="-1" data-title="Record" data-short="Record">
   <div class="card">
     <h2><span class="num">3</span> Record the call <span class="clock">0:28 – 0:36</span></h2>
-    <p class="lede">Stop typing notes. Let the app listen, on this Mac.</p>
-
-    <div class="say">
-      <span class="tag">Say this</span>
-      <p id="p3">I don’t want to type my notes. Let me just talk to it and have it write them down while I’m speaking — and again, all on this Mac.</p>
-      <div class="row">
-        <button type="button" data-copy="p3">Copy</button>
+    <p class="lede">Stop typing notes. Let the app listen on this Mac.</p>
+    <div class="step-grid">
+      <div class="step-main">
+        <ol class="clicks">
+          <li>Wait. Then press <b class="ui">▶ Run</b> (<kbd>⌘R</kbd>).</li>
+          <li>You should see <b class="ui">Record call</b> next to <b class="ui">Use sample</b>.</li>
+          <li>Click <b class="ui">Use sample</b> so you can see this pair’s customer.</li>
+          <li>Click <b class="ui">Record call</b>. If macOS asks for the microphone, click <b class="ui">OK</b>.</li>
+          <li>Speak one sentence about that customer (hospital, campus, shop, bank). See <b class="ui">SEED.md</b>.</li>
+          <li>Words should appear while you speak.</li>
+          <li>Click <b class="ui">Stop recording</b>, then <b class="ui">Build initiative</b>.</li>
+        </ol>
+        <div class="moment">
+          <strong>No microphone?</strong> Click <b class="ui">Use sample</b> and go on. Do not spend five minutes on it.
+        </div>
+        <h3>Tick these</h3>
+        <ul class="check">
+          <li><label><input type="checkbox"><span><b class="ui">Record call</b> button appeared</span></label></li>
+          <li><label><input type="checkbox"><span>Words appeared while talking, or I used sample notes</span></label></li>
+          <li><label><input type="checkbox"><span>Build initiative filled the middle and right panes</span></label></li>
+        </ul>
+      </div>
+      <div class="step-side">
+        <div class="say">
+          <span class="tag">Say this · Di esto</span>
+          <p id="p3">I don’t want to type my notes. Let me just talk to it and have it write them down while I’m speaking — and again, all on this Mac.</p>
+          <div class="row">
+            <button type="button" data-copy="p3">Copy · Copiar</button>
+          </div>
+        </div>
+        <div class="say">
+          <span class="tag">Hospital only · Solo hospital</span>
+          <p id="p4">They’ve got about three hundred Windows laptops, most of them four years old. The help desk is drowning. And they’re nervous about patient data leaving the building.</p>
+          <div class="row"><button type="button" data-copy="p4">Copy · Copiar</button></div>
+        </div>
       </div>
     </div>
-
-    <h3>Then, click by click</h3>
-    <ol class="clicks">
-      <li>Wait for it to finish, then press <b class="ui">▶ Run</b> (<kbd>⌘R</kbd>).</li>
-      <li>You should now have a <b class="ui">Record call</b> button beside <b class="ui">Use sample</b>.</li>
-      <li>Click <b class="ui">Use sample</b> so you can see this session's customer.</li>
-      <li>Click <b class="ui">Record call</b>. If macOS asks for the microphone, click
-          <b class="ui">OK</b>. Then speak a sentence in <em>that</em> world — hospital,
-          campus, shop, bank, whatever the sample is. There is a line in
-          <b class="ui">SEED.md</b> in the Starter folder. A hospital version:</li>
-    </ol>
-
-    <div class="say small">
-      <span class="tag">Hospital fallback — only if your sample is healthcare</span>
-      <p id="p4">They’ve got about three hundred Windows laptops, most of them four years old. The help desk is drowning. And they’re nervous about patient data leaving the building.</p>
-      <div class="row"><button type="button" data-copy="p4">Copy</button></div>
-    </div>
-
-    <ol class="clicks" start="5">
-      <li>Words should appear <em>as you speak</em>, not after you stop.</li>
-      <li>Click <b class="ui">Stop recording</b>, then <b class="ui">Build initiative</b>.</li>
-    </ol>
-
-    <div class="moment">
-      <strong>Microphone not working?</strong> Don't spend five minutes on it. Click
-      <b class="ui">Use sample</b>, build the initiative, and go to Make it yours. Staff will not
-      debug microphone settings in the last minutes of the session.
-    </div>
-
-    <h3>Before you move on</h3>
-    <ul class="check">
-      <li><label><input type="checkbox"><span>A <b class="ui">Record call</b> button appeared</span></label></li>
-      <li><label><input type="checkbox"><span>Either: words appeared while I was talking, <em>or</em> I used sample notes instead</span></label></li>
-      <li><label><input type="checkbox"><span>Build initiative still filled the middle and right panes</span></label></li>
-    </ul>
   </div>
 </section>
 
-<section class="step s-taupe" id="yours" tabindex="-1" data-title="Make it yours" data-short="Look">
+<section class="step s-taupe" id="yours" tabindex="-1" data-title="Look" data-short="Look">
   <div class="card">
     <h2><span class="num">4</span> Make it yours <span class="clock">0:36 – 0:41</span></h2>
-    <p class="lede">The judges will see a wall of three-pane windows. Same jobs, different
-    personality. This sentence is what stops yours looking like everyone else's.</p>
-
-    <div class="say">
-      <span class="tag">Say this</span>
-      <p id="p5">This has to stand out on a wall of screenshots. Keep every button working, but give the window a look that is obviously ours — start from SEED.md and go further if you like.</p>
-      <div class="row">
-        <button type="button" data-copy="p5">Copy</button>
-        <span class="hint">Behind? Skip this sentence. The seed already changed the title, colour,
-        and customer. Still screenshot with all three panes filled.</span>
+    <p class="lede">Same jobs. Different look. This sentence is yours.</p>
+    <div class="step-grid">
+      <div class="step-main">
+        <ol class="clicks">
+          <li>Wait. Then press <b class="ui">▶ Run</b> (<kbd>⌘R</kbd>).</li>
+          <li>You should still have notes, an initiative, and an email, plus a look that is not grey.</li>
+        </ol>
+        <p class="hint">Behind? Skip this sentence. The seed already changed the title and colour. Still screenshot with all three panes filled.</p>
+        <h3>Tick these</h3>
+        <ul class="check">
+          <li><label><input type="checkbox"><span>Use sample, Record, Build initiative, Copy, and Open in Mail still work</span></label></li>
+          <li><label><input type="checkbox"><span>The window has our colour, title, or look</span></label></li>
+        </ul>
+      </div>
+      <div class="step-side">
+        <div class="say">
+          <span class="tag">Say this · Di esto</span>
+          <p id="p5">This has to stand out on a wall of screenshots. Keep every button working, but give the window a look that is obviously ours — start from SEED.md and go further if you like.</p>
+          <div class="row">
+            <button type="button" data-copy="p5">Copy · Copiar</button>
+          </div>
+        </div>
       </div>
     </div>
-
-    <h3>Then, click by click</h3>
-    <ol class="clicks">
-      <li>Wait for it to finish, then press <b class="ui">▶ Run</b> (<kbd>⌘R</kbd>).</li>
-      <li>You should still have notes, an initiative, and an email — plus a look that isn't
-          default grey.</li>
-    </ol>
-
-    <h3>Before you move on</h3>
-    <ul class="check">
-      <li><label><input type="checkbox"><span>Use sample, Record, Build initiative, Copy, and Open in Mail still work</span></label></li>
-      <li><label><input type="checkbox"><span>The window has a colour, title, or personality we would recognise as ours</span></label></li>
-    </ul>
   </div>
 </section>
 
-<section class="step s-gold" id="submit" tabindex="-1" data-title="Submit" data-short="Submit">
+<section class="step s-gold" id="submit" tabindex="-1" data-title="Screenshot" data-short="Shot">
   <div class="card">
     <h2>Submit your screenshot <span class="clock">0:41 – 0:45</span></h2>
-    <p class="lede">The app stays on this Mac. The screenshot goes to the room gallery so staff
-    can judge by looking. They are scoring three panes of working app <em>and</em> a look
-    that isn't a clone of the next pair's.</p>
-
-    <div class="moment">
-      <strong>Turn Wi-Fi back on</strong> before you open Safari. Analysis already happened on
-      the laptop. Uploading a screenshot is a later, deliberate step — like photographing a
-      whiteboard.
+    <p class="lede">The app stays on this Mac. The photo goes on the wall.</p>
+    <div class="step-grid">
+      <div class="step-main">
+        <div class="moment">
+          <strong>Turn Wi-Fi on</strong> before you send the photo.
+        </div>
+        <h3>1. Capture the window</h3>
+        <ol class="clicks">
+          <li>Show all three panes: notes, fields, email.</li>
+          <li>Press <kbd>⌘⇧4</kbd>, then tap <kbd>Space</kbd>.</li>
+          <li>Click the app window. A PNG lands on the Desktop.</li>
+        </ol>
+        <p class="hint">Crop the window, not the whole screen. An empty middle pane is not finished.</p>
+        <h3>Tick these</h3>
+        <ul class="check">
+          <li><label><input type="checkbox"><span>Screenshot shows notes, fields, email, and our look</span></label></li>
+          <li><label><input type="checkbox"><span>It is on the gallery wall</span></label></li>
+        </ul>
+      </div>
+      <div class="step-side">
+        <div id="play-upload">
+          <h3>2. Screenshot · Captura</h3>
+          <p class="local-only">This file cannot send the photo. Open the contest site, then drop it there.</p>
+          <p class="play-only" id="play-upload-intro">Turn Wi-Fi on. Drop your screenshot here.</p>
+          <form id="shot-form">
+            <label class="dropzone" id="dropzone" for="screenshot-file">
+              <input id="screenshot-file" class="dropzone-input" type="file" accept="image/png,image/jpeg,image/webp" autocomplete="off">
+              <span class="dropzone-idle">
+                <svg class="dropzone-icon" viewBox="0 0 64 64" aria-hidden="true">
+                  <rect x="6" y="18" width="52" height="36" rx="6" fill="none" stroke="currentColor" stroke-width="3"/>
+                  <circle cx="32" cy="38" r="10" fill="none" stroke="currentColor" stroke-width="3"/>
+                  <path d="M24 12h16l3 6H21z" fill="currentColor"/>
+                  <path d="M32 8v10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <span class="dropzone-title">Drop screenshot here</span>
+                <span class="dropzone-es" lang="es">Suelta la captura aquí</span>
+                <span class="dropzone-hint">or click to choose · o haz clic</span>
+              </span>
+              <span class="dropzone-preview">
+                <img id="dropzone-img" alt="Preview of your screenshot" width="1200" height="800">
+                <span class="dropzone-file" id="dropzone-name"></span>
+              </span>
+            </label>
+            <button class="dropzone-submit play-only" id="shot-submit" type="submit" disabled>Send to the wall · Enviar</button>
+          </form>
+          <p class="local-only"><a class="gallery-url" href="https://ambassadors26.up.railway.app/">Open the contest site</a></p>
+        </div>
+      </div>
     </div>
-
-    <h3>Capture the window</h3>
-    <ol class="clicks">
-      <li>Arrange the app so all three panes show content: notes, the urgency badge and fields,
-          and the email.</li>
-      <li>Press <kbd>⌘⇧4</kbd>, then tap <kbd>Space</kbd>. The cursor becomes a camera.</li>
-      <li>Click the app window. A PNG lands on the Desktop.</li>
-    </ol>
-    <p class="hint">Crop the <em>window</em>, not the whole desktop. An empty middle pane is an
-    incomplete submission.</p>
-
-    <h3>Upload it</h3>
-    <ol class="clicks">
-      <li>If you started on the contest website, stay on that tab — the upload form is on this step.
-          Turn Wi-Fi back on first.</li>
-      <li>If you're on this local file instead, open
-          <a class="gallery-url" href="https://ambassadors26.up.railway.app/">https://ambassadors26.up.railway.app/</a>,
-          enter the same team name and PIN, and upload there.</li>
-      <li>You should see your window on the wall.</li>
-    </ol>
-
-    <h3>Before you move on</h3>
-    <ul class="check">
-      <li><label><input type="checkbox"><span>Screenshot shows notes, initiative fields, the email, and a look that isn't default grey</span></label></li>
-      <li><label><input type="checkbox"><span>It appeared on the gallery wall</span></label></li>
-    </ul>
   </div>
 </section>
 
-<section class="step s-blue" id="why" tabindex="-1" data-title="Why that worked" data-short="Why">
+<section class="step s-blue" id="why" tabindex="-1" data-title="Why" data-short="Why">
   <div class="card">
     <h2>Why that worked <span class="clock">0:43 – 0:45</span></h2>
-    <p>Your sentences were short, but the app still came out right. That's not mind-reading —
-    there's a file in the project called <b class="ui">BUILD-SPEC.md</b> (and
-    <b class="ui">AGENTS.md</b>) holding the detail you didn't say: which Apple frameworks to use,
-    that it must never call the internet, and which of two similar-looking speech technologies is
-    the current one.</p>
-    <p><strong>Somebody wrote that file, once.</strong> Write the brief down properly a single time,
-    and from then on everyone can ask for what they want in plain English. The seed and the last
-    sentence are the same idea: same spec, different personality.</p>
-    <p>The on-device model is small and fast. It's excellent at pulling structure out of messy notes.
-    It will not write your account strategy. Don't sell it as more than that.</p>
+    <p>Your sentences were short. The app still came out right. A file named <b class="ui">BUILD-SPEC.md</b> already held the details: which Apple tools to use, and that nothing may leave this Mac.</p>
+    <p>Someone wrote that file once. After that, you can ask in plain English.</p>
+    <p>The model on this Mac is good at reading messy notes. It will not write your sales plan. Do not sell it as more than that.</p>
     <hr class="mosaic">
-    <p class="hint">Two more sentences to try later are in <code>STRETCH.md</code>.
-    Facilitators: see <a href="#facilitator">facilitator notes</a>.</p>
+    <p class="hint">More sentences: <code>STRETCH.md</code>. Hosts: <a href="#facilitator">facilitator notes</a>.</p>
   </div>
 </section>
 
-<section class="step s-gold" id="stuck" tabindex="-1" data-title="If it goes wrong" data-ref="1">
+<section class="step s-gold" id="stuck" tabindex="-1" data-title="Help" data-ref="1">
   <div class="card">
     <h2>If it goes wrong</h2>
-    <p class="lede">All of this is normal. Say the fix out loud, the same as everything else —
-    you don't need to understand the error.</p>
+    <p class="lede">This is normal. Say the fix out loud. You do not need to understand the error.</p>
     <table>
-      <thead><tr><th>What you're seeing</th><th class="fix">What to say</th></tr></thead>
+      <thead><tr><th>Problem</th><th class="fix">Say this</th></tr></thead>
       <tbody>
         <tr><td>Xcode shows a red error</td><td class="fix">Copy the error text, paste it in, and add <q>fix this</q></td></tr>
         <tr><td>It built something odd</td><td class="fix"><q>Have another look at BUILD-SPEC.md — that isn't what it asks for.</q></td></tr>
-        <tr><td>It asked you for an API key or an account</td><td class="fix"><q>No. This has to run on the Mac, on device. No network calls.</q></td></tr>
-        <tr><td>Something that used to work has stopped</td><td class="fix"><q>You've broken something that was working — put it back.</q></td></tr>
-        <tr><td>The button does nothing at all</td><td class="fix"><q>I clicked Build initiative and nothing happened.</q></td></tr>
-        <tr><td>Two attempts have failed</td><td class="fix">Ask staff to restore this session’s look (<kbd>Rescue Session.command</kbd>). Then say the sentence again.</td></tr>
-        <tr><td>A notice about Apple Intelligence being unavailable</td><td class="fix">Not your fault and not fixable here. Put your hand up.</td></tr>
-        <tr><td>Dictation garbled your sentence</td><td class="fix">Use the <b class="ui">Copy</b> button instead and move on. Don't lose two minutes to it.</td></tr>
-        <tr><td>It used the old speech API / words only appear after you stop</td><td class="fix"><q>Have another look at BUILD-SPEC.md — section 3. Use SpeechAnalyzer, not SFSpeechRecognizer. I want the words to appear while I'm still talking.</q></td></tr>
-        <tr><td>The site says that team name is already in</td><td class="fix">That's fine if it's yours — use the same name and PIN to resume. Otherwise pick a different name.</td></tr>
+        <tr><td>It asked for an API key or an account</td><td class="fix"><q>No. This has to run on the Mac, on device. No network calls.</q></td></tr>
+        <tr><td>Something that worked has stopped</td><td class="fix"><q>You've broken something that was working — put it back.</q></td></tr>
+        <tr><td>The button does nothing</td><td class="fix"><q>I clicked Build initiative and nothing happened.</q></td></tr>
+        <tr><td>Two attempts failed</td><td class="fix">Ask staff to restore this session’s look (<kbd>Rescue Session.command</kbd>). Then say the sentence again.</td></tr>
+        <tr><td>Apple Intelligence unavailable</td><td class="fix">Not your fault. Put your hand up.</td></tr>
+        <tr><td>Dictation garbled the sentence</td><td class="fix">Use <b class="ui">Copy · Copiar</b> and move on.</td></tr>
+        <tr><td>Words only appear after you stop</td><td class="fix"><q>Have another look at BUILD-SPEC.md — section 3. Use SpeechAnalyzer, not SFSpeechRecognizer. I want the words to appear while I'm still talking.</q></td></tr>
+        <tr><td>The site says that team name is already in</td><td class="fix">If it is yours, use the same name and PIN. If not, pick a different name.</td></tr>
       </tbody>
     </table>
   </div>
@@ -621,9 +747,9 @@
 </section>
 
 <footer>
-  Mac Initiative Builder · Apple Ambassadors Barcelona · 22–24 September 2026 ·
-  analysis runs on-device; the screenshot is uploaded afterwards.
-  <span class="hint noprint">Tip: <kbd>⌘P</kbd> prints every step as a handout.</span>
+  Mac Initiative Builder · Barcelona · 22–24 September 2026 ·
+  analysis on this Mac; screenshot uploaded after.
+  <span class="hint noprint"> <kbd>⌘P</kbd> prints every step.</span>
 </footer>
 
 <p class="sr" role="status" aria-live="polite" id="live"></p>
@@ -652,7 +778,7 @@
   function copy(text, btn) {
     function ok() {
       var was = btn.textContent;
-      btn.textContent = "Copied";
+      btn.textContent = "Copied · Copiado";
       live.textContent = "Copied to clipboard";
       setTimeout(function () { btn.textContent = was; }, 1600);
     }
@@ -690,10 +816,12 @@
     var li = document.createElement("li");
     var b = document.createElement("button");
     b.type = "button";
-    b.className = "pill";
+    b.className = "crumb-link";
     b.dataset.go = s.id;
-    b.innerHTML = '<span class="n">' + (i + 1) + '</span><span class="t"></span>';
-    b.querySelector(".t").textContent = s.dataset.short || s.dataset.title;
+    b.innerHTML = '<span class="n"></span><span class="t-full"></span><span class="t-short"></span>';
+    b.querySelector(".n").textContent = String(i + 1);
+    b.querySelector(".t-full").textContent = s.dataset.title;
+    b.querySelector(".t-short").textContent = s.dataset.short || s.dataset.title;
     b.title = s.dataset.title;
     li.appendChild(b);
     stepper.appendChild(li);
@@ -765,11 +893,9 @@
     var bs = boxesIn(s);
     if (!bs.length) { tick.textContent = ""; return; }
     var n = bs.filter(function (b) { return b.checked; }).length;
-    tick.textContent = n + " of " + bs.length + " ticked";
+    tick.textContent = n + " of " + bs.length + " done";
     tick.className = "tick" + (n === bs.length ? " all" : "");
   }
-
-  var crumb = document.getElementById("crumb");
 
   function show(id, push) {
     var i = index[id];
@@ -780,18 +906,10 @@
 
     steps.forEach(function (x) { x.classList.toggle("on", x === s); });
 
-    [].slice.call(stepper.querySelectorAll(".pill")).forEach(function (p) {
+    [].slice.call(stepper.querySelectorAll(".crumb-link")).forEach(function (p) {
       if (p.dataset.go === id) p.setAttribute("aria-current", "step");
       else p.removeAttribute("aria-current");
     });
-
-    if (s.dataset.ref) {
-      crumb.innerHTML = "Reference · <b></b>";
-      crumb.querySelector("b").textContent = s.dataset.title;
-    } else {
-      crumb.innerHTML = "Step " + s.dataset.pos + " of " + main.length + " · <b></b>";
-      crumb.querySelector("b").textContent = s.dataset.title;
-    }
 
     paintNav(s);
     if (!s.dataset.ref) { try { localStorage.setItem(POS, id); } catch (e) {} }
@@ -871,7 +989,7 @@
     main.forEach(function (s) {
       var bs = boxesIn(s);
       var done = bs.length > 0 && bs.every(function (b) { return b.checked; });
-      var pill = stepper.querySelector('.pill[data-go="' + s.id + '"]');
+      var pill = stepper.querySelector('.crumb-link[data-go="' + s.id + '"]');
       if (pill) {
         pill.classList.toggle("done", done);
         pill.querySelector(".n").textContent = done ? "✓" : s.dataset.pos;
@@ -922,6 +1040,122 @@
       live.textContent = "Clock started";
     }
   });
+
+  function hasFiles(e) {
+    var dt = e.dataTransfer;
+    if (!dt || !dt.types) return false;
+    if (typeof dt.types.contains === "function") return dt.types.contains("Files");
+    return [].indexOf.call(dt.types, "Files") !== -1;
+  }
+  function putFile(input, file) {
+    if (!file || !input) return false;
+    try {
+      input.files = (function () {
+        var list = new DataTransfer();
+        list.items.add(file);
+        return list.files;
+      })();
+      return input.files && input.files[0];
+    } catch (err) {
+      try { input.files = arguments[2]; } catch (e2) {}
+      return !!(input.files && input.files[0]);
+    }
+  }
+  function initDropzone() {
+    var zone = document.getElementById("dropzone");
+    var input = document.getElementById("screenshot-file");
+    var img = document.getElementById("dropzone-img");
+    var nameEl = document.getElementById("dropzone-name");
+    var submit = document.getElementById("shot-submit");
+    var form = document.getElementById("shot-form");
+    var intro = document.getElementById("play-upload-intro");
+    if (!zone || !input) return;
+
+    if (window.__PLAY__ && window.__UPLOADED__ && intro) {
+      intro.textContent = "It is on the wall. Drop a new file to replace it.";
+      intro.classList.add("ok");
+      intro.setAttribute("role", "status");
+    }
+    if (window.__PLAY__ && window.__UPLOADED__ && submit) {
+      submit.textContent = "Replace on the wall · Reemplazar";
+    }
+
+    function showFile(file) {
+      if (!file || !/^image\//.test(file.type || "")) {
+        live.textContent = "Use a PNG or JPEG screenshot.";
+        return;
+      }
+      var url = URL.createObjectURL(file);
+      img.onload = function () { URL.revokeObjectURL(url); };
+      img.src = url;
+      img.alt = "Preview of your screenshot";
+      if (nameEl) nameEl.textContent = file.name;
+      zone.classList.add("has-file");
+      if (submit) submit.disabled = false;
+      live.textContent = "Screenshot ready";
+    }
+
+    input.addEventListener("change", function () {
+      if (input.files[0]) showFile(input.files[0]);
+    });
+
+    zone.addEventListener("dragenter", function (e) {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      zone.classList.add("dragover");
+    });
+    zone.addEventListener("dragover", function (e) {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+      zone.classList.add("dragover");
+    });
+    zone.addEventListener("dragleave", function (e) {
+      if (e.relatedTarget && zone.contains(e.relatedTarget)) return;
+      zone.classList.remove("dragover");
+    });
+    zone.addEventListener("drop", function (e) {
+      e.preventDefault();
+      zone.classList.remove("dragover");
+      var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!file) return;
+      if (!putFile(input, file) && e.dataTransfer.files) {
+        try { input.files = e.dataTransfer.files; } catch (err) {}
+      }
+      if (input.files && input.files[0]) showFile(input.files[0]);
+      else {
+        showFile(file);
+        live.textContent = "Click the box to choose the file, then send.";
+      }
+    });
+
+    document.addEventListener("dragover", function (e) {
+      if (hasFiles(e)) e.preventDefault();
+    });
+    document.addEventListener("drop", function (e) {
+      if (hasFiles(e)) e.preventDefault();
+    });
+
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        if (!window.__PLAY__) {
+          e.preventDefault();
+          live.textContent = "Open the contest site to send this photo.";
+          return;
+        }
+        if (!input.files || !input.files[0]) {
+          e.preventDefault();
+          live.textContent = "Drop a screenshot first.";
+          return;
+        }
+        if (submit) {
+          submit.disabled = true;
+          submit.textContent = "Sending…";
+        }
+      });
+    }
+  }
+  initDropzone();
 })();
 </script>
 </body>

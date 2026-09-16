@@ -6,7 +6,7 @@ struct Ambassadors26App: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .tint(Color(red: 0.12, green: 0.45, blue: 0.55))
+                .tint(Color(red: 0.42, green: 0.22, blue: 0.62))
                 .frame(minWidth: 1120, minHeight: 600)
         }
         .windowResizability(.contentMinSize)
@@ -24,9 +24,9 @@ struct ContentView: View {
 
     /// A realistic conversation to demo with, so nobody has to invent one.
     private static let sample = """
-    Customer has 320 Windows laptops, most are four years old.
-    Support volumes have increased and clinical staff share devices.
-    They are concerned about patient data leaving the organisation.
+    25 Windows PCs on the bench. The ELN is in a US cloud and QA is unhappy.
+    Scientists photograph gel trays on personal phones.
+    Anything with patient-derived samples has to stay on-prem.
     """
 
     var body: some View {
@@ -40,7 +40,7 @@ struct ContentView: View {
             emailPane
                 .frame(minWidth: 360)
         }
-        .navigationTitle("Ward Initiative")
+        .navigationTitle("Lab Brief")
     }
 
     // MARK: - Input
@@ -49,7 +49,7 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 16) {
             PaneHeader(
                 title: "Conversation notes",
-                subtitle: "Notes from a conversation with a hospital IT lead."
+                subtitle: "Notes from a conversation with a biotech lab manager."
             )
 
             notesEditor
@@ -74,7 +74,7 @@ struct ContentView: View {
             }
             .overlay(alignment: .topLeading) {
                 if transcript.isEmpty {
-                    Text("e.g. 320 Windows laptops, clinical staff sharing devices…")
+                    Text("e.g. 25 bench PCs, ELN in the cloud, GxP…")
                         .font(.body)
                         .foregroundStyle(.tertiary)
                         .padding(16)
@@ -112,7 +112,7 @@ struct ContentView: View {
     private var outputPane: some View {
         ContentUnavailableView(
             "No initiative yet",
-            systemImage: "cross.case.fill",
+            systemImage: "atom",
             description: Text("Build an initiative to see a structured recommendation here.")
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)

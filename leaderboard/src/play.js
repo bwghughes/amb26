@@ -21,6 +21,7 @@ export function wrapPlayPage(raw, { teamName, step, ticks, uploaded, notice, err
 window.__SERVER_STEP__ = ${JSON.stringify(step || "")};
 window.__SERVER_TICKS__ = ${JSON.stringify(ticks || {})};
 window.__PLAY__ = true;
+window.__UPLOADED__ = ${uploaded ? "true" : "false"};
 (function () {
   var queue = [];
   function send(body) {
@@ -52,77 +53,42 @@ window.__PLAY__ = true;
 })();
 </script>`;
 
-  const banner = `<div class="team-bar" role="region" aria-label="Your team">
+  const team = `<div id="team-slot" class="team-slot">
   <strong>${escapeHtml(teamName)}</strong>
-  <span>Keep this tab open when you turn Wi-Fi off. Progress syncs when you're back.</span>
-  <span class="team-bar-links">
+  <span class="team-links">
     <a href="/wall">The wall</a>
     ·
     <form method="post" action="/leave" style="display:inline">
-      <button type="submit" class="linkish">Not this team</button>
+      <button type="submit" class="linkish">Wrong team?</button>
     </form>
   </span>
-</div>
-<style>
-.team-bar {
-  position: sticky; top: 0; z-index: 6;
-  display: flex; gap: .75rem; align-items: baseline; flex-wrap: wrap;
-  margin: 0 -1.25rem 0; padding: .45rem 1.25rem;
-  background: var(--card); border-bottom: 1px solid var(--line);
-  font-size: .9rem;
-}
-.team-bar span { color: var(--ink-dim); }
-.team-bar-links { margin-left: auto; }
-.team-bar button.linkish {
-  background: none; border: 0; padding: 0; color: var(--link);
-  font: inherit; cursor: pointer; text-decoration: underline;
-}
-.toolbar { top: 2.4rem; }
-.error {
-  background: #fbeeda; border-left: 4px solid var(--gold);
-  border-radius: 8px; padding: .8rem 1rem;
-}
-.ok {
-  background: #e8f4f5; border-left: 4px solid var(--teal);
-  border-radius: 8px; padding: .8rem 1rem;
-}
-form label { display: block; font-weight: 650; margin: 0 0 .35rem; }
-form input[type="file"] { display: block; margin: 0 0 .6rem; }
+</div>`;
+
+  const playCss = `<style>
+.flash { padding-top: 1rem; }
+.flash .error, .flash .ok { font-size: 1.15rem; }
 </style>`;
 
   const status = error
-    ? `<p class="error" role="alert" style="margin: .75rem 1.25rem">${escapeHtml(error)}</p>`
+    ? `<div class="flash"><p class="error" role="alert">${escapeHtml(error)}</p></div>`
     : notice
-      ? `<p class="ok" role="status" style="margin: .75rem 1.25rem">${escapeHtml(notice)}</p>`
+      ? `<div class="flash"><p class="ok" role="status">${escapeHtml(notice)}</p></div>`
       : "";
 
-  const upload = uploaded
-    ? `<h3>Upload it</h3>
-<p class="ok" role="status">It's on the wall. You can replace it with a better crop if you need to.</p>
-<form method="post" action="/play/screenshot" enctype="multipart/form-data">
-  <label for="screenshot">Replace screenshot</label>
-  <input id="screenshot" name="screenshot" type="file" accept="image/png,image/jpeg,image/webp">
-  <p class="hint">⌘⇧4, then Space, click the window. All three panes should show content.</p>
-  <button class="btn" type="submit">Replace</button>
-</form>
-<p><a href="/wall">See the wall</a></p>
-<h3>Before you move on</h3>`
-    : `<h3>Upload it</h3>
-<p>You're already signed in as <b class="ui">${escapeHtml(teamName)}</b>. Turn Wi-Fi back on, then attach the PNG from your Desktop.</p>
-<form method="post" action="/play/screenshot" enctype="multipart/form-data">
-  <label for="screenshot">Screenshot of the app window</label>
-  <input id="screenshot" name="screenshot" type="file" accept="image/png,image/jpeg,image/webp" required>
-  <p class="hint">⌘⇧4, then Space, click the window. All three panes should show content.</p>
-  <button class="btn" type="submit">Publish screenshot</button>
-</form>
-<h3>Before you move on</h3>`;
-
   let html = raw;
-  html = html.replace("</head>", `${boot}\n</head>`);
-  html = html.replace('<div class="wrap">', `${banner}${status}<div class="wrap">`);
+  html = html.replace('<html lang="en-GB">', '<html lang="en-GB" class="play">');
+  html = html.replace("</head>", `${boot}\n${playCss}\n</head>`);
+  html = html.replace('<div id="team-slot" class="team-slot" hidden></div>', team);
+  html = html.replace('<div class="wrap" id="main">', `${status}<div class="wrap" id="main">`);
   html = html.replace(
-    /<h3>Upload it<\/h3>[\s\S]*?<h3>Before you move on<\/h3>/,
-    upload,
+    '<form id="shot-form">',
+    '<form id="shot-form" method="post" action="/play/screenshot" enctype="multipart/form-data">',
+  );
+  html = html.replace(
+    'id="screenshot-file"',
+    uploaded
+      ? 'id="screenshot-file" name="screenshot"'
+      : 'id="screenshot-file" name="screenshot" required',
   );
   return html;
 }

@@ -67,10 +67,10 @@ export function validateImage(file) {
   }
   const type = (file.type || "").toLowerCase();
   if (!ALLOWED.has(type)) {
-    return "Use a PNG or JPEG screenshot of the app window.";
+    return "Use a PNG or JPEG photo of the app window.";
   }
   if (file.size > MAX_BYTES) {
-    return "That screenshot is too large — keep it under 8 MB.";
+    return "That file is too big. Use a file under 8 MB.";
   }
   return null;
 }

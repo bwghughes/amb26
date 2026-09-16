@@ -31,7 +31,8 @@ cp ../exercise.html content/exercise.html
 cp ../scripts/install-workshop-agent.sh content/install.sh
 ```
 
-Mac setup: `curl -fsSL https://ambassadors26.up.railway.app/install | bash`
+Mac setup (from-scratch pack + agent + Codex; API key from MDM, not this curl):
+`curl -fsSL https://ambassadors26.up.railway.app/install | bash`
 
 ## Railway
 

@@ -53,20 +53,61 @@ After it finishes:
 Install once on every contest Mac. It sits in the background, checks in with the
 staff site, and runs `Reset Workshop.command --yes` when you press Reset.
 
-**Install** (primary — non-interactive):
+**Install** (primary — from-scratch bootstrap, non-interactive):
 
 ```bash
 curl -fsSL https://ambassadors26.up.railway.app/install | bash
 ```
 
-That clones or updates this pack (default `~/Desktop/Ambassadors26-CodeAlong`),
-installs the LaunchAgent, and does **not** reset the workshop. Confirm the printed
-Computer Name under **Workshop Macs** on https://ambassadors26.up.railway.app/admin.
+Do **not** put an API key on that command line. MDM delivers
+`OPENAI_API_KEY` or `CODEX_API_KEY` onto each contest Mac. The served
+script only *reads* it.
+
+MDM owner: see [MDM.md](MDM.md).
+
+On a Mac that already has Xcode, that is the whole setup. It clones this pack
+to `~/Desktop/Ambassadors26-CodeAlong` if needed (or fast-forward pulls if the
+folder already exists), makes sure `Starter/` is a real Xcode project (copies
+`scripts/starter-stock/` if GitHub left an empty gitlink), copies `Starter` to
+`~/Desktop/Starter` on first install, `chmod +x` the reset/rescue/install
+scripts, installs the LaunchAgent, and installs **Codex as the Xcode
+Intelligence agent** (the tarball Xcode 27 already lists in
+`AgentVersions.plist`). Confirm the printed Computer Name under
+**Workshop Macs** on https://ambassadors26.up.railway.app/admin. Quit and
+reopen Xcode if it was already open, then open the Desktop Starter and press
+Run once.
+
+**MDM must put the key** where Codex and this script can see it (first match
+wins; the script never prints the value):
+
+1. Process environment `OPENAI_API_KEY` or `CODEX_API_KEY`
+2. Aqua session env via `launchctl getenv` — typical for a config-profile
+   Environment Variables payload
+3. Managed preferences domain **`com.openai.codex`** (Codex’s official MDM
+   domain), same key names — also `openai_api_key`, `APIKey`, `api_key`
+4. Any plist under `/Library/Managed Preferences` with those keys
+
+The script then copies that MDM value into:
+
+- Codex login for Xcode’s `CODEX_HOME`
+  (`~/Library/Developer/Xcode/CodingAssistant/codex`) — Keychain service
+  **`Codex Auth`**, plus `auth.json` there if the CLI writes one
+- `launchctl setenv OPENAI_API_KEY` / `CODEX_API_KEY` if those were not
+  already set, so Xcode launched from the Dock can see the key
+- Xcode defaults so Codex is the selected Intelligence agent
+
+Nothing is written into the git repo or the served `/install` script.
+
+If MDM has not applied the key yet, pack + LaunchAgent still finish. The
+script prints a loud warning and skips Codex login. Re-run the same plain
+curl after MDM delivers the key.
 
 Defaults: contest URL `https://ambassadors26.up.railway.app`, agent secret
-`workshop-reset`. Override with `SERVER`, `AGENT_SECRET`, `PACK`, or `PACK_REMOTE`.
-If GitHub is private, copy the pack onto the Mac first and re-run with `PACK` set
-to that folder.
+`workshop-reset`, repo `https://github.com/bwghughes/amb26.git`. Override with
+`SERVER`, `AGENT_SECRET`, `PACK`, or `REPO_URL`. A re-run will not overwrite an
+existing `~/Desktop/Starter` that already looks like a project. If GitHub is
+private, copy the pack onto the Mac first and re-run with `PACK` set to that
+folder.
 
 **Double-click fallback** (first time: Right-click → Open):
 
