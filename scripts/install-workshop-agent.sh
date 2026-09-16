@@ -24,24 +24,27 @@
 # Codex API key comes from MDM on the Mac (not from this curl). Read at runtime:
 #   OPENAI_API_KEY / CODEX_API_KEY in process env, launchctl getenv, or
 #   managed prefs domain com.openai.codex. Never written into this script.
+
+# Contest Mac home. Resolve and export HOME *before* `set -u`. MDM LaunchDaemons
+# often spawn bash with HOME unset; expanding $HOME then aborts at line ~25.
+DEFAULT_INSTALL_HOME="/Users/Ambassador"
+DEFAULT_INSTALL_USER="Ambassador"
+INSTALL_HOME="${INSTALL_HOME:-${AMBASSADOR_HOME:-$DEFAULT_INSTALL_HOME}}"
+INSTALL_HOME="${INSTALL_HOME%/}"
+export HOME="$INSTALL_HOME"
+
 set -euo pipefail
 
 DEFAULT_SERVER="https://ambassadors26.up.railway.app"
 DEFAULT_SECRET="workshop-reset"
 DEFAULT_REMOTE="https://github.com/bwghughes/amb26.git"
 GITHUB_INSTALL="https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh"
-DEFAULT_INSTALL_HOME="/Users/Ambassador"
-DEFAULT_INSTALL_USER="Ambassador"
 LABEL="com.ambassadors26.workshop-agent"
 PYTHON="/usr/bin/python3"
 
 SERVER="${SERVER:-${CONTEST_URL:-$DEFAULT_SERVER}}"
 SECRET="${AGENT_SECRET:-$DEFAULT_SECRET}"
 REMOTE="${REPO_URL:-${PACK_REMOTE:-$DEFAULT_REMOTE}}"
-
-# Contest Mac home. Never $HOME — under MDM this script is root and $HOME is /var/root.
-INSTALL_HOME="${INSTALL_HOME:-${AMBASSADOR_HOME:-$DEFAULT_INSTALL_HOME}}"
-INSTALL_HOME="${INSTALL_HOME%/}"
 
 if [[ ! -d "$INSTALL_HOME" ]]; then
   echo "Install home $INSTALL_HOME does not exist." >&2
@@ -83,6 +86,7 @@ resolve_install_user() {
 resolve_install_user
 INSTALL_UID="$(id -u "$INSTALL_USER")"
 INSTALL_GROUP="$(id -gn "$INSTALL_USER")"
+export HOME="$INSTALL_HOME"
 export INSTALL_HOME INSTALL_USER INSTALL_UID
 
 DEFAULT_PACK="$INSTALL_HOME/Desktop/Ambassadors26-CodeAlong"
@@ -96,8 +100,23 @@ expand_path() {
   echo "$value"
 }
 
+# SIP/TCC forbids chown of ~/Desktop (and similar protected home folders).
+# Never chown those directories. Only chown trees we create inside them.
+is_protected_home_path() {
+  local path="${1%/}"
+  case "$path" in
+    "$INSTALL_HOME"|"$INSTALL_HOME/Desktop"|"$INSTALL_HOME/Documents"|"$INSTALL_HOME/Downloads"|"$INSTALL_HOME/Pictures"|"$INSTALL_HOME/Movies"|"$INSTALL_HOME/Music"|"$INSTALL_HOME/Public"|"$INSTALL_HOME/Library")
+      return 0
+      ;;
+  esac
+  return 1
+}
+
 own_tree() {
   local path="$1"
+  if is_protected_home_path "$path"; then
+    return 0
+  fi
   if [[ "$(id -u)" -eq 0 && -e "$path" ]]; then
     chown -R "${INSTALL_USER}:${INSTALL_GROUP}" "$path"
   fi
@@ -106,10 +125,15 @@ own_tree() {
 ensure_owned_dir() {
   local dir="$1"
   local mode="${2:-755}"
-  mkdir -p "$dir"
-  chmod "$mode" "$dir" 2>/dev/null || true
+  if is_protected_home_path "$dir"; then
+    [[ -d "$dir" ]] || mkdir -p "$dir"
+    return 0
+  fi
   if [[ "$(id -u)" -eq 0 ]]; then
-    chown "${INSTALL_USER}:${INSTALL_GROUP}" "$dir"
+    install -d -o "$INSTALL_USER" -g "$INSTALL_GROUP" -m "$mode" "$dir"
+  else
+    mkdir -p "$dir"
+    chmod "$mode" "$dir" 2>/dev/null || true
   fi
 }
 
@@ -234,13 +258,25 @@ clone_failed() {
 
 clone_into() {
   local dest="$1"
+  local parent
   if [[ -e "$dest" ]]; then
     echo "Refusing to clone into $dest because it already exists and is not a workshop pack." >&2
     clone_failed
   fi
-  ensure_owned_dir "$(dirname "$dest")"
+  parent="$(dirname "$dest")"
+  # Parent is often ~/Desktop — create it if missing, but never chown Desktop.
+  if [[ ! -d "$parent" ]]; then
+    mkdir -p "$parent"
+  fi
   echo "Cloning $REMOTE -> $dest"
-  git clone "$REMOTE" "$dest" || clone_failed
+  # Clone as Ambassador so the pack is born owned correctly (no chown of Desktop).
+  if [[ "$(id -u)" -eq 0 ]]; then
+    if ! as_install_user git clone "$REMOTE" "$dest"; then
+      git clone "$REMOTE" "$dest" || clone_failed
+    fi
+  else
+    git clone "$REMOTE" "$dest" || clone_failed
+  fi
   own_tree "$dest"
 }
 
@@ -328,8 +364,13 @@ ensure_desktop_starter() {
     fi
   fi
 
-  ensure_owned_dir "$(dirname "$DESKTOP_STARTER")"
-  mkdir -p "$DESKTOP_STARTER"
+  # Do not chown ~/Desktop. Create Starter inside it with Ambassador ownership.
+  mkdir -p "$(dirname "$DESKTOP_STARTER")"
+  if [[ "$(id -u)" -eq 0 ]]; then
+    install -d -o "$INSTALL_USER" -g "$INSTALL_GROUP" "$DESKTOP_STARTER"
+  else
+    mkdir -p "$DESKTOP_STARTER"
+  fi
   rsync -a \
     --exclude .DS_Store \
     --exclude xcuserdata/ \

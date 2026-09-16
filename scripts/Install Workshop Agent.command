@@ -3,6 +3,7 @@
 # SERVER / AGENT_SECRET are already set), then runs the same non-interactive
 # installer as:
 #   curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash
+export HOME="${HOME:-${INSTALL_HOME:-${AMBASSADOR_HOME:-/Users/Ambassador}}}"
 set -euo pipefail
 
 DIR="$(cd "$(dirname "$0")" && pwd)"

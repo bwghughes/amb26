@@ -1,6 +1,7 @@
 #!/bin/bash
 # Stops the workshop agent LaunchAgent on this Mac.
 # Targets /Users/Ambassador even if this is run as root (MDM).
+export HOME="${HOME:-${INSTALL_HOME:-${AMBASSADOR_HOME:-/Users/Ambassador}}}"
 set -euo pipefail
 LABEL="com.ambassadors26.workshop-agent"
 DEFAULT_INSTALL_HOME="/Users/Ambassador"
@@ -15,7 +16,7 @@ if [[ -d "$INSTALL_HOME" ]]; then
     uid="$(stat -f '%u' "$INSTALL_HOME" 2>/dev/null || id -u)"
   fi
 else
-  PLIST="$HOME/Library/LaunchAgents/${LABEL}.plist"
+  PLIST="${HOME:-$DEFAULT_INSTALL_HOME}/Library/LaunchAgents/${LABEL}.plist"
   uid="$(id -u)"
 fi
 launchctl asuser "$uid" launchctl bootout "gui/${uid}/${LABEL}" >/dev/null 2>&1 || true

@@ -64,7 +64,7 @@ If it finds a key, it runs `codex login --with-api-key` **as user Ambassador** w
 
 That stores the login in **Ambassador’s** login Keychain, service **`Codex Auth`**. If `launchctl getenv` is still empty in that user’s GUI domain, the installer may call `launchctl setenv` there for `OPENAI_API_KEY` and `CODEX_API_KEY` so Dock-launched Xcode can see them.
 
-Do **not** trust `$HOME` when this curl runs under MDM as root (`$HOME` is `/var/root`). Pack, Desktop Starter, LaunchAgent, agent.json, logs, and Codex all go under `/Users/Ambassador`. Files are `chown`’d to `Ambassador` (primary group from `id -gn Ambassador`). `launchctl bootstrap` targets `gui/$(id -u Ambassador)`, not the root domain. If `/Users/Ambassador` does not exist, the installer exits; creating that account is MDM’s job.
+Do **not** trust `$HOME` when this curl runs under MDM as root (`$HOME` may be unset or `/var/root`). The installer exports `HOME=/Users/Ambassador` after resolving `INSTALL_HOME`. Pack, Desktop Starter, LaunchAgent, agent.json, logs, and Codex all go under `/Users/Ambassador`. Files we create are `chown`’d to `Ambassador` (primary group from `id -gn Ambassador`); the Desktop folder itself is not chowned (SIP/TCC) — the pack lives inside it. `launchctl bootstrap` targets `gui/$(id -u Ambassador)`, not the root domain. If `/Users/Ambassador` does not exist, the installer exits; creating that account is MDM’s job.
 
 If MDM has not delivered a key yet, pack + workshop agent still finish. Codex login is skipped. Staff re-run the same `curl` after the profile is on the Mac.
 

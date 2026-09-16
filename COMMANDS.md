@@ -73,7 +73,8 @@ or `AMBASSADOR_HOME` for rehearsal). It clones this pack to
 pulls if the folder already exists), makes sure `Starter/` is a real Xcode
 project (copies `scripts/starter-stock/` if GitHub left an empty gitlink),
 copies `Starter` to `/Users/Ambassador/Desktop/Starter` on first install,
-`chmod +x` the reset/rescue/install scripts, `chown`s the tree to user
+`chmod +x` the reset/rescue/install scripts, `chown`s pack / Starter / Library
+trees (not the Desktop folder — SIP/TCC; the pack lives inside it) to user
 `Ambassador`, installs the LaunchAgent in `gui/$(id -u Ambassador)`, and
 installs **Codex as the Xcode Intelligence agent** (the tarball Xcode 27
 already lists in `AgentVersions.plist`). Confirm the printed Computer Name
