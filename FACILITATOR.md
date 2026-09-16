@@ -45,12 +45,14 @@ A grey clone of the projector demo is an incomplete submission even if the field
       domain `com.openai.codex`). Do not curl the key on the command line.
 - [ ] **Workshop pack + agent + Codex** on every contest Mac (Xcode already installed):
       `curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash`
-      That clones the repo, puts `Starter` on the Desktop, starts the agent,
-      and installs Codex for Xcode Intelligence from the MDM key. Confirm each
+      That clones the repo into `/Users/Ambassador` (even if MDM runs the
+      curl as root — `$HOME` is `/var/root` then and must not be trusted), puts
+      `Starter` on that user’s Desktop, starts the agent as Ambassador, and
+      installs Codex for Xcode Intelligence from the MDM key. Confirm each
       Computer Name appears under Workshop Macs on `/admin`. Reopen Xcode
       after install. If the script warns that MDM has not delivered the key,
       fix the profile and re-run the same curl.
-- [ ] `"$HOME/Desktop/Starter"` **opened in Xcode and run once** — warms the build so their first rebuild is seconds, not a minute. First Xcode launch may install extra components; first `.command` script may need Right-click → Open.
+- [ ] `/Users/Ambassador/Desktop/Starter` **opened in Xcode and run once** — warms the build so their first rebuild is seconds, not a minute. First Xcode launch may install extra components; first `.command` script may need Right-click → Open.
 - [ ] **Reset Workshop run once before doors** (dashboard **Reset all**, or `scripts/Reset Workshop.command`) so the first pair is not all on hospital grey.
 - [ ] The finished app (`../Ambassadors26`) built and run once too, **including the record button** — pre-downloads the speech assets. Twenty Macs doing that on conference Wi-Fi is how you lose the session.
 - [ ] ~30 GB free disk.
@@ -115,7 +117,7 @@ Or double-click the script locally and confirm **Reset**. Either way it:
 
 1. Quits the app.
 2. Restores `Starter/` from `scripts/starter-stock/` (the stock three-pane shell), then
-   overlays agent docs. If `"$HOME/Desktop/Starter"` exists, that copy is replaced with the
+   overlays agent docs. If `/Users/Ambassador/Desktop/Starter` exists, that copy is replaced with the
    restored+seeded pack Starter.
 3. Picks a new theme (accent, title, empty-state symbol, sample notes, spoken line) and
    writes `SEED.md`.

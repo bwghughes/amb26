@@ -1,7 +1,11 @@
 #!/bin/bash
 # From-scratch bootstrap for a contest Mac that already has Xcode.
-# Clones the pack if needed, materializes Starter/, copies "$HOME/Desktop/Starter"
-# on first install, and installs the workshop LaunchAgent. Does not reset.
+# Clones the pack if needed, materializes Starter/, copies
+# /Users/Ambassador/Desktop/Starter on first install, and installs the
+# workshop LaunchAgent. Does not reset.
+#
+# Contest paths are pinned to /Users/Ambassador (not $HOME). MDM often
+# runs this as root, where $HOME is /var/root — never install there.
 #
 #   curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash
 #
@@ -11,9 +15,11 @@
 # Optional env:
 #   SERVER / CONTEST_URL   contest site (default https://ambassadors26.up.railway.app)
 #   AGENT_SECRET           must match the server (default workshop-reset)
+#   INSTALL_HOME / AMBASSADOR_HOME
+#                          install home (default /Users/Ambassador). Rehearsal override.
 #   PACK                   existing Ambassadors26-CodeAlong folder (clone here if missing)
-#                          default: "$HOME/Desktop/Ambassadors26-CodeAlong"
-#   DESKTOP_STARTER        Desktop copy of Starter (default "$HOME/Desktop/Starter")
+#                          default: /Users/Ambassador/Desktop/Ambassadors26-CodeAlong
+#   DESKTOP_STARTER        Desktop copy of Starter (default /Users/Ambassador/Desktop/Starter)
 #   REPO_URL / PACK_REMOTE git URL (default https://github.com/bwghughes/amb26.git)
 # Codex API key comes from MDM on the Mac (not from this curl). Read at runtime:
 #   OPENAI_API_KEY / CODEX_API_KEY in process env, launchctl getenv, or
@@ -24,21 +30,131 @@ DEFAULT_SERVER="https://ambassadors26.up.railway.app"
 DEFAULT_SECRET="workshop-reset"
 DEFAULT_REMOTE="https://github.com/bwghughes/amb26.git"
 GITHUB_INSTALL="https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh"
-DEFAULT_PACK="$HOME/Desktop/Ambassadors26-CodeAlong"
+DEFAULT_INSTALL_HOME="/Users/Ambassador"
+DEFAULT_INSTALL_USER="Ambassador"
 LABEL="com.ambassadors26.workshop-agent"
-SUPPORT="$HOME/Library/Application Support/Ambassadors26"
-LOG="$HOME/Library/Logs/ambassadors26-agent.log"
-PLIST="$HOME/Library/LaunchAgents/${LABEL}.plist"
 PYTHON="/usr/bin/python3"
 
 SERVER="${SERVER:-${CONTEST_URL:-$DEFAULT_SERVER}}"
 SECRET="${AGENT_SECRET:-$DEFAULT_SECRET}"
 REMOTE="${REPO_URL:-${PACK_REMOTE:-$DEFAULT_REMOTE}}"
 
+# Contest Mac home. Never $HOME — under MDM this script is root and $HOME is /var/root.
+INSTALL_HOME="${INSTALL_HOME:-${AMBASSADOR_HOME:-$DEFAULT_INSTALL_HOME}}"
+INSTALL_HOME="${INSTALL_HOME%/}"
+
+if [[ ! -d "$INSTALL_HOME" ]]; then
+  echo "Install home $INSTALL_HOME does not exist." >&2
+  echo "MDM must create the contest user first (default account: $DEFAULT_INSTALL_USER, home: $DEFAULT_INSTALL_HOME)." >&2
+  echo "This script will not write into /var/root or \$HOME." >&2
+  echo "For rehearsal on another account, set INSTALL_HOME to that user's home." >&2
+  exit 1
+fi
+
+resolve_install_user() {
+  local home_owner="" dscl_user="" candidate=""
+  if [[ -n "${INSTALL_USER:-}" ]] && id -u "$INSTALL_USER" >/dev/null 2>&1; then
+    return 0
+  fi
+  if [[ "$INSTALL_HOME" == "$DEFAULT_INSTALL_HOME" ]] && id -u "$DEFAULT_INSTALL_USER" >/dev/null 2>&1; then
+    INSTALL_USER="$DEFAULT_INSTALL_USER"
+    return 0
+  fi
+  dscl_user="$(dscl . -search /Users NFSHomeDirectory "$INSTALL_HOME" 2>/dev/null | awk '{print $1; exit}' || true)"
+  if [[ -n "$dscl_user" ]] && id -u "$dscl_user" >/dev/null 2>&1; then
+    INSTALL_USER="$dscl_user"
+    return 0
+  fi
+  candidate="$(basename "$INSTALL_HOME")"
+  if id -u "$candidate" >/dev/null 2>&1; then
+    INSTALL_USER="$candidate"
+    return 0
+  fi
+  home_owner="$(stat -f '%Su' "$INSTALL_HOME" 2>/dev/null || true)"
+  if [[ -n "$home_owner" && "$home_owner" != "root" ]] && id -u "$home_owner" >/dev/null 2>&1; then
+    INSTALL_USER="$home_owner"
+    return 0
+  fi
+  echo "Could not resolve the macOS account for install home $INSTALL_HOME." >&2
+  echo "Expected user $DEFAULT_INSTALL_USER (id -u $DEFAULT_INSTALL_USER). MDM must create that account." >&2
+  exit 1
+}
+
+resolve_install_user
+INSTALL_UID="$(id -u "$INSTALL_USER")"
+INSTALL_GROUP="$(id -gn "$INSTALL_USER")"
+export INSTALL_HOME INSTALL_USER INSTALL_UID
+
+DEFAULT_PACK="$INSTALL_HOME/Desktop/Ambassadors26-CodeAlong"
+SUPPORT="$INSTALL_HOME/Library/Application Support/Ambassadors26"
+LOG="$INSTALL_HOME/Library/Logs/ambassadors26-agent.log"
+PLIST="$INSTALL_HOME/Library/LaunchAgents/${LABEL}.plist"
+
 expand_path() {
   local value="$1"
-  value="${value/#\~/$HOME}"
+  value="${value/#\~/$INSTALL_HOME}"
   echo "$value"
+}
+
+own_tree() {
+  local path="$1"
+  if [[ "$(id -u)" -eq 0 && -e "$path" ]]; then
+    chown -R "${INSTALL_USER}:${INSTALL_GROUP}" "$path"
+  fi
+}
+
+ensure_owned_dir() {
+  local dir="$1"
+  local mode="${2:-755}"
+  mkdir -p "$dir"
+  chmod "$mode" "$dir" 2>/dev/null || true
+  if [[ "$(id -u)" -eq 0 ]]; then
+    chown "${INSTALL_USER}:${INSTALL_GROUP}" "$dir"
+  fi
+}
+
+# Run as the contest user so Keychain, defaults, and LaunchAgents hit their
+# login session, not root's. launchctl asuser covers the Aqua domain.
+as_install_user() {
+  if [[ "$(id -u)" == "$INSTALL_UID" ]]; then
+    env HOME="$INSTALL_HOME" USER="$INSTALL_USER" LOGNAME="$INSTALL_USER" "$@"
+    return
+  fi
+  if [[ "$(id -u)" -ne 0 ]]; then
+    sudo -u "$INSTALL_USER" env HOME="$INSTALL_HOME" USER="$INSTALL_USER" LOGNAME="$INSTALL_USER" "$@"
+    return
+  fi
+  # Root: prefer the user's Aqua session so Keychain / defaults / launchctl
+  # hit their login domain. Fall back to sudo -u if they are not logged in.
+  if launchctl asuser "$INSTALL_UID" true >/dev/null 2>&1; then
+    launchctl asuser "$INSTALL_UID" sudo -u "$INSTALL_USER" env HOME="$INSTALL_HOME" USER="$INSTALL_USER" LOGNAME="$INSTALL_USER" "$@"
+    return
+  fi
+  sudo -u "$INSTALL_USER" env HOME="$INSTALL_HOME" USER="$INSTALL_USER" LOGNAME="$INSTALL_USER" "$@"
+}
+
+bootstrap_agent() {
+  local domain="gui/${INSTALL_UID}"
+  local target="${domain}/${LABEL}"
+  if [[ "$(id -u)" -eq 0 ]]; then
+    launchctl asuser "$INSTALL_UID" launchctl bootout "$target" >/dev/null 2>&1 || true
+    launchctl bootout "$target" >/dev/null 2>&1 || true
+    if launchctl asuser "$INSTALL_UID" launchctl bootstrap "$domain" "$PLIST"; then
+      return 0
+    fi
+    if launchctl bootstrap "$domain" "$PLIST"; then
+      return 0
+    fi
+    echo "LaunchAgent plist is at $PLIST (owned by $INSTALL_USER)." >&2
+    echo "Could not bootstrap ${target}. It will load when $INSTALL_USER logs in." >&2
+    echo "Did not load the agent into the root domain." >&2
+    return 0
+  fi
+  launchctl bootout "$target" >/dev/null 2>&1 || true
+  launchctl unload "$PLIST" >/dev/null 2>&1 || true
+  if ! launchctl bootstrap "$domain" "$PLIST" 2>/dev/null; then
+    launchctl load "$PLIST"
+  fi
 }
 
 need_tools() {
@@ -78,9 +194,9 @@ find_existing_pack() {
   fi
 
   candidates+=(
-    "$HOME/Desktop/Ambassadors26-CodeAlong"
-    "$HOME/code/Ambassadors26-CodeAlong"
-    "$HOME/Ambassadors26-CodeAlong"
+    "$INSTALL_HOME/Desktop/Ambassadors26-CodeAlong"
+    "$INSTALL_HOME/code/Ambassadors26-CodeAlong"
+    "$INSTALL_HOME/Ambassadors26-CodeAlong"
   )
 
   local c
@@ -104,6 +220,7 @@ update_pack() {
   else
     echo "Using existing pack at $dir (git pull skipped)."
   fi
+  own_tree "$dir"
 }
 
 clone_failed() {
@@ -111,7 +228,7 @@ clone_failed() {
   echo "If that repo is private, copy Ambassadors26-CodeAlong onto this Mac and re-run with PACK set:" >&2
   echo "  PACK=$DEFAULT_PACK curl -fsSL ${GITHUB_INSTALL} | bash" >&2
   echo "Or set REPO_URL to a reachable git remote." >&2
-  echo "Common locations: $HOME/Desktop/Ambassadors26-CodeAlong, $HOME/code/Ambassadors26-CodeAlong" >&2
+  echo "Common locations: $INSTALL_HOME/Desktop/Ambassadors26-CodeAlong, $INSTALL_HOME/code/Ambassadors26-CodeAlong" >&2
   exit 1
 }
 
@@ -121,9 +238,10 @@ clone_into() {
     echo "Refusing to clone into $dest because it already exists and is not a workshop pack." >&2
     clone_failed
   fi
-  mkdir -p "$(dirname "$dest")"
+  ensure_owned_dir "$(dirname "$dest")"
   echo "Cloning $REMOTE -> $dest"
   git clone "$REMOTE" "$dest" || clone_failed
+  own_tree "$dest"
 }
 
 # GitHub may still have Starter as a leftover gitlink (mode 160000) with no
@@ -183,7 +301,7 @@ chmod_scripts() {
   done
 }
 
-# First install: create "$HOME/Desktop/Starter" so pairs open that project.
+# First install: create /Users/Ambassador/Desktop/Starter so pairs open that project.
 # Re-run: leave an existing Desktop copy alone (a pair may be mid-session).
 # Override with DESKTOP_STARTER.
 ensure_desktop_starter() {
@@ -210,6 +328,7 @@ ensure_desktop_starter() {
     fi
   fi
 
+  ensure_owned_dir "$(dirname "$DESKTOP_STARTER")"
   mkdir -p "$DESKTOP_STARTER"
   rsync -a \
     --exclude .DS_Store \
@@ -217,6 +336,7 @@ ensure_desktop_starter() {
     --exclude '*.xcuserstate' \
     --exclude DerivedData/ \
     "$src"/ "$DESKTOP_STARTER"/
+  own_tree "$DESKTOP_STARTER"
   echo "Copied Starter to $DESKTOP_STARTER"
   DESKTOP_NOTE="Open $DESKTOP_STARTER/Ambassadors26.xcodeproj in Xcode."
 }
@@ -271,16 +391,19 @@ for name in ("OPENAI_API_KEY", "CODEX_API_KEY"):
     if found:
         emit("process env " + name, found)
 
+uid = os.environ.get("INSTALL_UID", "")
 for name in ("OPENAI_API_KEY", "CODEX_API_KEY"):
-    try:
-        raw = subprocess.check_output(
-            ["launchctl", "getenv", name], stderr=subprocess.DEVNULL
-        )
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        continue
-    found = nonempty(raw.decode() if raw else "")
-    if found:
-        emit("launchctl getenv " + name, found)
+    commands = [["launchctl", "getenv", name]]
+    if uid:
+        commands.append(["launchctl", "asuser", uid, "launchctl", "getenv", name])
+    for cmd in commands:
+        try:
+            raw = subprocess.check_output(cmd, stderr=subprocess.DEVNULL)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            continue
+        found = nonempty(raw.decode() if raw else "")
+        if found:
+            emit("launchctl getenv " + name, found)
 
 def defaults_read(domain, key):
     try:
@@ -297,11 +420,12 @@ for domain in ("com.openai.codex", "com.apple.dt.Xcode"):
         if found:
             emit("managed prefs " + domain + " " + name, found)
 
-user = os.environ.get("USER", "")
+user = os.environ.get("INSTALL_USER") or os.environ.get("USER", "")
+install_home = os.environ.get("INSTALL_HOME", "")
 roots = [
     Path("/Library/Managed Preferences"),
     Path("/Library/Managed Preferences") / user if user else None,
-    Path.home() / "Library/Managed Preferences",
+    Path(install_home) / "Library/Managed Preferences" if install_home else None,
 ]
 seen = set()
 for root in roots:
@@ -332,7 +456,7 @@ warn_codex() {
 }
 
 # Official Xcode Intelligence path: AgentVersions.plist names the Codex
-# tarball, Xcode loads it from "$HOME/Library/Developer/Xcode/CodingAssistant".
+# tarball, Xcode loads it from /Users/Ambassador/Library/Developer/Xcode/CodingAssistant.
 # Missing MDM key or Codex setup must not fail pack + LaunchAgent.
 install_xcode_codex() {
   local key="" source="" resolved=""
@@ -386,7 +510,7 @@ install_xcode_codex() {
   fi
 
   local agents_root dest xcode_link work tgz extracted dest_bin
-  agents_root="$HOME/Library/Developer/Xcode/CodingAssistant/Agents"
+  agents_root="$INSTALL_HOME/Library/Developer/Xcode/CodingAssistant/Agents"
   dest="$agents_root/codex/$version"
   dest_bin="$dest/codex"
   xcode_link="$agents_root/XcodeVersions/$build/codex"
@@ -440,7 +564,7 @@ install_xcode_codex() {
       CODEX_STATUS="skipped (bad tarball)"
       return 0
     fi
-    mkdir -p "$dest"
+    ensure_owned_dir "$dest"
     cp "$extracted" "$dest_bin"
     chmod +x "$dest_bin"
     xattr -dr com.apple.quarantine "$dest" 2>/dev/null || true
@@ -465,13 +589,13 @@ EOF
     echo "Codex $version already installed for Xcode Intelligence."
   fi
 
-  mkdir -p "$agents_root/XcodeVersions/$build"
+  ensure_owned_dir "$agents_root/XcodeVersions/$build"
   ln -sfn "$dest" "$xcode_link"
+  own_tree "$INSTALL_HOME/Library/Developer/Xcode/CodingAssistant"
 
   local codex_home config
-  codex_home="$HOME/Library/Developer/Xcode/CodingAssistant/codex"
-  mkdir -p "$codex_home"
-  chmod 700 "$codex_home" 2>/dev/null || true
+  codex_home="$INSTALL_HOME/Library/Developer/Xcode/CodingAssistant/codex"
+  ensure_owned_dir "$codex_home" 700
   config="$codex_home/config.toml"
   "$PYTHON" - "$config" "$PACK/Starter" "$DESKTOP_STARTER" <<'PY'
 from pathlib import Path
@@ -498,10 +622,10 @@ for starter in starters:
 config_path.write_text(text if text.endswith("\n") else text + "\n")
 PY
 
-  defaults write com.apple.dt.Xcode IDEChatAllowAgents -bool YES
-  defaults write com.apple.dt.Xcode IDEAllowUnauthenticatedAgents -bool YES
-  defaults write com.apple.dt.Xcode IDEIntelligenceHasInstalledAtLeastOnce -bool YES
-  "$PYTHON" - <<'PY'
+  as_install_user defaults write com.apple.dt.Xcode IDEChatAllowAgents -bool YES
+  as_install_user defaults write com.apple.dt.Xcode IDEAllowUnauthenticatedAgents -bool YES
+  as_install_user defaults write com.apple.dt.Xcode IDEIntelligenceHasInstalledAtLeastOnce -bool YES
+  as_install_user "$PYTHON" - <<'PY'
 import json
 import subprocess
 
@@ -539,9 +663,10 @@ PY
     return 0
   fi
 
-  # Official Codex login: key on stdin, stored in Keychain "Codex Auth"
-  # (and auth.json if the CLI also writes one). Never print the key.
-  if ! printf '%s' "$key" | CODEX_HOME="$codex_home" "$dest_bin" login --with-api-key >/dev/null; then
+  # Official Codex login: key on stdin, stored in the contest user's Keychain
+  # "Codex Auth" (and auth.json if the CLI also writes one). Run as Ambassador
+  # so the item lands in their login keychain, not root's. Never print the key.
+  if ! printf '%s' "$key" | as_install_user env CODEX_HOME="$codex_home" "$dest_bin" login --with-api-key >/dev/null; then
     warn_codex "codex login --with-api-key failed. MDM delivered a key from: $source"
     warn_codex "Pack and workshop agent are installed. Re-run after MDM refreshes the key."
     unset key
@@ -551,24 +676,39 @@ PY
   if [[ -f "$codex_home/auth.json" ]]; then
     chmod 600 "$codex_home/auth.json"
   fi
+  own_tree "$codex_home"
 
-  # Bridge into the Aqua session so Xcode (Dock / GUI) can see the same key
-  # if MDM only wrote managed prefs or a Terminal-only env.
-  if [[ -z "$(launchctl getenv OPENAI_API_KEY 2>/dev/null || true)" ]]; then
-    launchctl setenv OPENAI_API_KEY "$key"
+  # Bridge into Ambassador's Aqua session so Xcode (Dock / GUI) can see the
+  # same key if MDM only wrote managed prefs or a root-only env.
+  user_openai="$(launchctl asuser "$INSTALL_UID" launchctl getenv OPENAI_API_KEY 2>/dev/null || true)"
+  user_codex="$(launchctl asuser "$INSTALL_UID" launchctl getenv CODEX_API_KEY 2>/dev/null || true)"
+  if [[ "$(id -u)" == "$INSTALL_UID" ]]; then
+    user_openai="${user_openai:-$(launchctl getenv OPENAI_API_KEY 2>/dev/null || true)}"
+    user_codex="${user_codex:-$(launchctl getenv CODEX_API_KEY 2>/dev/null || true)}"
   fi
-  if [[ -z "$(launchctl getenv CODEX_API_KEY 2>/dev/null || true)" ]]; then
-    launchctl setenv CODEX_API_KEY "$key"
+  if [[ -z "$user_openai" ]]; then
+    if [[ "$(id -u)" == "$INSTALL_UID" ]]; then
+      launchctl setenv OPENAI_API_KEY "$key"
+    else
+      launchctl asuser "$INSTALL_UID" launchctl setenv OPENAI_API_KEY "$key" 2>/dev/null || true
+    fi
+  fi
+  if [[ -z "$user_codex" ]]; then
+    if [[ "$(id -u)" == "$INSTALL_UID" ]]; then
+      launchctl setenv CODEX_API_KEY "$key"
+    else
+      launchctl asuser "$INSTALL_UID" launchctl setenv CODEX_API_KEY "$key" 2>/dev/null || true
+    fi
   fi
   unset key
 
-  echo "Codex is the Xcode Intelligence agent. API key taken from MDM ($source) and stored in this Mac's login keychain (service: Codex Auth), not in the git repo."
+  echo "Codex is the Xcode Intelligence agent. API key taken from MDM ($source) and stored in $INSTALL_USER's login keychain (service: Codex Auth), not in the git repo."
   CODEX_STATUS="configured from MDM ($source)"
 }
 
 need_tools
 
-DESKTOP_STARTER="$(expand_path "${DESKTOP_STARTER:-$HOME/Desktop/Starter}")"
+DESKTOP_STARTER="$(expand_path "${DESKTOP_STARTER:-$INSTALL_HOME/Desktop/Starter}")"
 
 if [[ -n "${PACK:-}" ]]; then
   PACK="$(expand_path "$PACK")"
@@ -597,8 +737,14 @@ fi
 ensure_starter
 chmod_scripts
 ensure_desktop_starter
+if [[ "$PACK" == "$INSTALL_HOME"/* || "$PACK" == "$INSTALL_HOME" ]]; then
+  own_tree "$PACK"
+fi
 
-mkdir -p "$SUPPORT" "$(dirname "$PLIST")" "$(dirname "$LOG")"
+ensure_owned_dir "$INSTALL_HOME/Library/Application Support"
+ensure_owned_dir "$SUPPORT" 700
+ensure_owned_dir "$(dirname "$PLIST")"
+ensure_owned_dir "$(dirname "$LOG")"
 "$PYTHON" - "$SUPPORT/agent.json" "$SERVER" "$SECRET" "$PACK" <<'PY'
 import json, sys
 from pathlib import Path
@@ -614,8 +760,9 @@ cfg["secret"] = secret
 cfg["pack"] = pack
 path.write_text(json.dumps(cfg, indent=2) + "\n")
 PY
+chmod 600 "$SUPPORT/agent.json" 2>/dev/null || true
+own_tree "$SUPPORT"
 
-uid="$(id -u)"
 cat > "$PLIST" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -627,6 +774,11 @@ cat > "$PLIST" <<EOF
   <true/>
   <key>KeepAlive</key>
   <true/>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>HOME</key>
+    <string>${INSTALL_HOME}</string>
+  </dict>
   <key>ProgramArguments</key>
   <array>
     <string>/usr/bin/python3</string>
@@ -639,18 +791,20 @@ cat > "$PLIST" <<EOF
 </dict>
 </plist>
 EOF
+chmod 644 "$PLIST" 2>/dev/null || true
+own_tree "$PLIST"
+touch "$LOG"
+chmod 644 "$LOG" 2>/dev/null || true
+own_tree "$LOG"
 
-launchctl bootout "gui/${uid}/${LABEL}" >/dev/null 2>&1 || true
-launchctl unload "$PLIST" >/dev/null 2>&1 || true
-if ! launchctl bootstrap "gui/${uid}" "$PLIST" 2>/dev/null; then
-  launchctl load "$PLIST"
-fi
+bootstrap_agent
 
 install_xcode_codex
 
 name="$(scutil --get ComputerName 2>/dev/null || hostname)"
 echo
 echo "Workshop pack and agent installed."
+echo "User:    $INSTALL_USER (uid $INSTALL_UID, home $INSTALL_HOME)"
 echo "Pack:    $PACK"
 echo "Starter: $PACK/Starter"
 echo "Desktop: $DESKTOP_STARTER"

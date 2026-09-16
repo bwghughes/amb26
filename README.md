@@ -26,7 +26,7 @@ at the last step. Staff watch live progress at `/admin` and judge the wall.
 - Event PIN (rehearsal): `ondevice`
 - Staff PIN (rehearsal): `staff`
 - Agent secret (rehearsal): `workshop-reset`
-- Contest Mac setup (Xcode already on the machine): `curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash`
+- Contest Mac setup (Xcode already on the machine; artifacts land in `/Users/Ambassador` even if MDM runs this as root): `curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash`
 
 The gallery app is [`leaderboard/`](leaderboard/). Update the live URL here, in
 `exercise.html`, and in `FACILITATOR.md` if the Railway domain changes.

@@ -8,7 +8,9 @@ You do not need to run the workshop. You only need to put one secret on each con
 
 These Macs run a short Xcode workshop. Pairs use **Codex** inside **Xcode Intelligence**. The workshop installer does **not** put the API key on the `curl` command. The key must already be on the Mac (MDM), or staff re-runs the same installer after your profile arrives.
 
-Installer (staff; no key on this line):
+Installer (staff or MDM; no key on this line). Safe to run as root — artifacts
+land in `/Users/Ambassador`, not `$HOME` / `/var/root`. The contest user
+`Ambassador` must already exist:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash
@@ -54,13 +56,15 @@ The script never prints the key. It stops at the first non-empty value:
 1. Process environment: `OPENAI_API_KEY`, then `CODEX_API_KEY`
 2. `launchctl getenv`: `OPENAI_API_KEY`, then `CODEX_API_KEY`
 3. `defaults read` on **`com.openai.codex`**, then `com.apple.dt.Xcode`, using the names in the table above
-4. Any `.plist` under `/Library/Managed Preferences`, `/Library/Managed Preferences/$USER`, or `"$HOME/Library/Managed Preferences"` that contains those key names
+4. Any `.plist` under `/Library/Managed Preferences`, `/Library/Managed Preferences/Ambassador`, or `/Users/Ambassador/Library/Managed Preferences` that contains those key names
 
-If it finds a key, it runs `codex login --with-api-key` with:
+If it finds a key, it runs `codex login --with-api-key` **as user Ambassador** with:
 
-`CODEX_HOME="$HOME/Library/Developer/Xcode/CodingAssistant/codex"`
+`CODEX_HOME=/Users/Ambassador/Library/Developer/Xcode/CodingAssistant/codex`
 
-That stores the login in the login Keychain, service **`Codex Auth`**. If `launchctl getenv` is still empty, the installer may call `launchctl setenv` for `OPENAI_API_KEY` and `CODEX_API_KEY` so Dock-launched Xcode can see them.
+That stores the login in **Ambassador’s** login Keychain, service **`Codex Auth`**. If `launchctl getenv` is still empty in that user’s GUI domain, the installer may call `launchctl setenv` there for `OPENAI_API_KEY` and `CODEX_API_KEY` so Dock-launched Xcode can see them.
+
+Do **not** trust `$HOME` when this curl runs under MDM as root (`$HOME` is `/var/root`). Pack, Desktop Starter, LaunchAgent, agent.json, logs, and Codex all go under `/Users/Ambassador`. Files are `chown`’d to `Ambassador` (primary group from `id -gn Ambassador`). `launchctl bootstrap` targets `gui/$(id -u Ambassador)`, not the root domain. If `/Users/Ambassador` does not exist, the installer exits; creating that account is MDM’s job.
 
 If MDM has not delivered a key yet, pack + workshop agent still finish. Codex login is skipped. Staff re-run the same `curl` after the profile is on the Mac.
 
@@ -69,7 +73,7 @@ If MDM has not delivered a key yet, pack + workshop agent still finish. Codex lo
 | Decision | Recommendation |
 |---|---|
 | Which Macs | Every contest / lab Mac that will run the workshop |
-| User or device | Device-wide is best for a shared lab. If user-scoped, target the account that logs in for the session |
+| User or device | Device-wide is best for a shared lab. Target the **Ambassador** account (home `/Users/Ambassador`). If user-scoped, that is the account that logs in for the session |
 | Where the secret lives | A secure MDM payload only |
 | Where it must **not** live | Git repos, `.env` files, `COMMANDS.md`, Slack, or the install URL |
 
@@ -77,7 +81,7 @@ If MDM has not delivered a key yet, pack + workshop agent still finish. Codex lo
 
 1. Push the MDM profile (Environment Variables, or `com.openai.codex`).
 2. Confirm the profile is on the Mac **before** anyone uses Xcode Intelligence.
-3. Staff run `curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash` (no key on that line).
+3. Staff (or MDM) run `curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash` (no key on that line). Running as root is OK; files land in `/Users/Ambassador` owned by that user.
 4. If the profile arrives **late**, staff re-run that same `curl`. Do not add the key to the command.
 
 ## Verify (do not print the key)
