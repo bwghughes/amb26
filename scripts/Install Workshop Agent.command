@@ -2,7 +2,7 @@
 # Double-click installer. Prompts for URL and secret (optional — skip if
 # SERVER / AGENT_SECRET are already set), then runs the same non-interactive
 # installer as:
-#   curl -fsSL https://ambassadors26.up.railway.app/install | bash
+#   curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash
 set -euo pipefail
 
 DIR="$(cd "$(dirname "$0")" && pwd)"

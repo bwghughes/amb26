@@ -23,16 +23,19 @@ Keep the contest tab open when they turn Wi-Fi off. Ticks queue and sync when
 the network is back. `exercise.html` at the repo root is the fallback if the
 site is down.
 
-Docker copies `content/exercise.html` and `content/install.sh`. After you edit the
-root `exercise.html` or `scripts/install-workshop-agent.sh`, copy them before deploy:
+Docker copies `content/exercise.html`. After you edit the root `exercise.html`,
+copy it before deploy:
 
 ```bash
 cp ../exercise.html content/exercise.html
-cp ../scripts/install-workshop-agent.sh content/install.sh
 ```
 
-Mac setup (from-scratch pack + agent + Codex; API key from MDM, not this curl):
-`curl -fsSL https://ambassadors26.up.railway.app/install | bash`
+Mac setup is from GitHub, not this site (from-scratch pack + agent + Codex; API
+key from MDM, not this curl):
+`curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash`
+
+`GET /install` on the contest site redirects to that same raw URL so old curl
+lines still work. Do not treat the gallery as the install host.
 
 ## Railway
 

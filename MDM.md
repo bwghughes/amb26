@@ -11,7 +11,7 @@ These Macs run a short Xcode workshop. Pairs use **Codex** inside **Xcode Intell
 Installer (staff; no key on this line):
 
 ```bash
-curl -fsSL https://ambassadors26.up.railway.app/install | bash
+curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash
 ```
 
 ## Recommended payload: Environment Variables
@@ -77,7 +77,7 @@ If MDM has not delivered a key yet, pack + workshop agent still finish. Codex lo
 
 1. Push the MDM profile (Environment Variables, or `com.openai.codex`).
 2. Confirm the profile is on the Mac **before** anyone uses Xcode Intelligence.
-3. Staff run `curl -fsSL https://ambassadors26.up.railway.app/install | bash` (no key on that line).
+3. Staff run `curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash` (no key on that line).
 4. If the profile arrives **late**, staff re-run that same `curl`. Do not add the key to the command.
 
 ## Verify (do not print the key)

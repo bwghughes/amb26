@@ -44,7 +44,7 @@ A grey clone of the projector demo is an incomplete submission even if the field
       contest Mac (`launchctl getenv OPENAI_API_KEY` works, or managed prefs
       domain `com.openai.codex`). Do not curl the key on the command line.
 - [ ] **Workshop pack + agent + Codex** on every contest Mac (Xcode already installed):
-      `curl -fsSL https://ambassadors26.up.railway.app/install | bash`
+      `curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash`
       That clones the repo, puts `Starter` on the Desktop, starts the agent,
       and installs Codex for Xcode Intelligence from the MDM key. Confirm each
       Computer Name appears under Workshop Macs on `/admin`. Reopen Xcode
@@ -129,7 +129,7 @@ pair is still working — it destroys their project. The first time on a machine
 ask you to allow the script.
 
 Primary Mac setup is
-`curl -fsSL https://ambassadors26.up.railway.app/install | bash`
+`curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash`
 (from-scratch: repo, Desktop `Starter`, LaunchAgent, Codex for Xcode
 Intelligence). The API key comes from MDM, not from that curl. Uninstall and
 the double-click fallback are in [COMMANDS.md](COMMANDS.md).

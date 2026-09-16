@@ -309,22 +309,11 @@ app.post("/api/agent/ack", async (c) => {
   return c.json({ ok: true });
 });
 
-function installScriptHeaders() {
-  return {
-    "Content-Type": "text/x-shellscript; charset=utf-8",
-    "Content-Disposition": 'inline; filename="install.sh"',
-    "Cache-Control": "no-cache",
-  };
-}
+const GITHUB_INSTALL =
+  "https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh";
 
-async function serveInstall() {
-  const file = path.resolve(here, "../content/install.sh");
-  if (!existsSync(file)) return null;
-  return new Response(await readFile(file), { headers: installScriptHeaders() });
-}
-
-app.get("/install", async (c) => (await serveInstall()) || c.notFound());
-app.get("/install.sh", async (c) => (await serveInstall()) || c.notFound());
+app.get("/install", (c) => c.redirect(GITHUB_INSTALL, 302));
+app.get("/install.sh", (c) => c.redirect(GITHUB_INSTALL, 302));
 
 app.get("/health", (c) => c.json({ ok: true }));
 

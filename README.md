@@ -26,7 +26,7 @@ at the last step. Staff watch live progress at `/admin` and judge the wall.
 - Event PIN (rehearsal): `ondevice`
 - Staff PIN (rehearsal): `staff`
 - Agent secret (rehearsal): `workshop-reset`
-- Contest Mac setup (Xcode already on the machine): `curl -fsSL https://ambassadors26.up.railway.app/install | bash`
+- Contest Mac setup (Xcode already on the machine): `curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash`
 
 The gallery app is [`leaderboard/`](leaderboard/). Update the live URL here, in
 `exercise.html`, and in `FACILITATOR.md` if the Railway domain changes.
@@ -40,7 +40,7 @@ The gallery app is [`leaderboard/`](leaderboard/). Update the live URL here, in
 | [scripts/Reset Workshop.command](scripts/Reset%20Workshop.command) | Local rewind + new seed |
 | [scripts/Rescue Session.command](scripts/Rescue%20Session.command) | Mid-session rewind to this pair’s seed |
 | [scripts/starter-stock/](scripts/starter-stock) | Pristine three-pane shell reset copies from |
-| [scripts/install-workshop-agent.sh](scripts/install-workshop-agent.sh) | Curlable Mac setup (`/install`) |
+| [scripts/install-workshop-agent.sh](scripts/install-workshop-agent.sh) | Curlable Mac setup (GitHub raw on `main`) |
 | [scripts/Install Workshop Agent.command](scripts/Install%20Workshop%20Agent.command) | Double-click fallback for `/admin` reset |
 | [leaderboard/](leaderboard/) | Contest site (join, exercise, admin, wall) |
 | [FACILITATOR.md](FACILITATOR.md) | Pre-flight and run sheet |

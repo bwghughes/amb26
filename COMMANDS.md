@@ -56,7 +56,7 @@ staff site, and runs `Reset Workshop.command --yes` when you press Reset.
 **Install** (primary — from-scratch bootstrap, non-interactive):
 
 ```bash
-curl -fsSL https://ambassadors26.up.railway.app/install | bash
+curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash
 ```
 
 Do **not** put an API key on that command line. MDM delivers
@@ -96,7 +96,7 @@ The script then copies that MDM value into:
   already set, so Xcode launched from the Dock can see the key
 - Xcode defaults so Codex is the selected Intelligence agent
 
-Nothing is written into the git repo or the served `/install` script.
+Nothing is written into the git repo or the install script.
 
 If MDM has not applied the key yet, pack + LaunchAgent still finish. The
 script prints a loud warning and skips Codex login. Re-run the same plain

@@ -3,9 +3,10 @@
 # Clones the pack if needed, materializes Starter/, copies "$HOME/Desktop/Starter"
 # on first install, and installs the workshop LaunchAgent. Does not reset.
 #
-#   curl -fsSL https://ambassadors26.up.railway.app/install | bash
+#   curl -fsSL https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh | bash
 #
-# Keep this file in sync with leaderboard/content/install.sh (GET /install).
+# This file in the GitHub repo is the source of truth. The contest site
+# redirects GET /install to that raw URL so old curl lines still work.
 #
 # Optional env:
 #   SERVER / CONTEST_URL   contest site (default https://ambassadors26.up.railway.app)
@@ -22,6 +23,7 @@ set -euo pipefail
 DEFAULT_SERVER="https://ambassadors26.up.railway.app"
 DEFAULT_SECRET="workshop-reset"
 DEFAULT_REMOTE="https://github.com/bwghughes/amb26.git"
+GITHUB_INSTALL="https://raw.githubusercontent.com/bwghughes/amb26/main/scripts/install-workshop-agent.sh"
 DEFAULT_PACK="$HOME/Desktop/Ambassadors26-CodeAlong"
 LABEL="com.ambassadors26.workshop-agent"
 SUPPORT="$HOME/Library/Application Support/Ambassadors26"
@@ -107,7 +109,7 @@ update_pack() {
 clone_failed() {
   echo "Could not clone $REMOTE" >&2
   echo "If that repo is private, copy Ambassadors26-CodeAlong onto this Mac and re-run with PACK set:" >&2
-  echo "  PACK=$DEFAULT_PACK curl -fsSL ${DEFAULT_SERVER}/install | bash" >&2
+  echo "  PACK=$DEFAULT_PACK curl -fsSL ${GITHUB_INSTALL} | bash" >&2
   echo "Or set REPO_URL to a reachable git remote." >&2
   echo "Common locations: $HOME/Desktop/Ambassadors26-CodeAlong, $HOME/code/Ambassadors26-CodeAlong" >&2
   exit 1
@@ -526,7 +528,7 @@ PY
     echo
     warn_codex "MDM has not delivered a Codex API key yet."
     warn_codex "Put OPENAI_API_KEY or CODEX_API_KEY on the Mac via MDM, then re-run:"
-    warn_codex "  curl -fsSL ${DEFAULT_SERVER}/install | bash"
+    warn_codex "  curl -fsSL ${GITHUB_INSTALL} | bash"
     warn_codex "MDM destinations this script reads (first match wins):"
     warn_codex "  1. process environment OPENAI_API_KEY / CODEX_API_KEY"
     warn_codex "  2. launchctl getenv OPENAI_API_KEY / CODEX_API_KEY  (GUI / config-profile env)"
