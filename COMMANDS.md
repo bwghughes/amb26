@@ -66,10 +66,10 @@ script only *reads* it.
 MDM owner: see [MDM.md](MDM.md).
 
 On a Mac that already has Xcode, that is the whole setup. It clones this pack
-to `~/Desktop/Ambassadors26-CodeAlong` if needed (or fast-forward pulls if the
+to `"$HOME/Desktop/Ambassadors26-CodeAlong"` if needed (or fast-forward pulls if the
 folder already exists), makes sure `Starter/` is a real Xcode project (copies
 `scripts/starter-stock/` if GitHub left an empty gitlink), copies `Starter` to
-`~/Desktop/Starter` on first install, `chmod +x` the reset/rescue/install
+`"$HOME/Desktop/Starter"` on first install, `chmod +x` the reset/rescue/install
 scripts, installs the LaunchAgent, and installs **Codex as the Xcode
 Intelligence agent** (the tarball Xcode 27 already lists in
 `AgentVersions.plist`). Confirm the printed Computer Name under
@@ -90,7 +90,7 @@ wins; the script never prints the value):
 The script then copies that MDM value into:
 
 - Codex login for Xcode’s `CODEX_HOME`
-  (`~/Library/Developer/Xcode/CodingAssistant/codex`) — Keychain service
+  (`"$HOME/Library/Developer/Xcode/CodingAssistant/codex"`) — Keychain service
   **`Codex Auth`**, plus `auth.json` there if the CLI writes one
 - `launchctl setenv OPENAI_API_KEY` / `CODEX_API_KEY` if those were not
   already set, so Xcode launched from the Dock can see the key
@@ -104,8 +104,8 @@ curl after MDM delivers the key.
 
 Defaults: contest URL `https://ambassadors26.up.railway.app`, agent secret
 `workshop-reset`, repo `https://github.com/bwghughes/amb26.git`. Override with
-`SERVER`, `AGENT_SECRET`, `PACK`, or `REPO_URL`. A re-run will not overwrite an
-existing `~/Desktop/Starter` that already looks like a project. If GitHub is
+`SERVER`, `AGENT_SECRET`, `PACK`, `DESKTOP_STARTER`, or `REPO_URL`. A re-run will not overwrite an
+existing `"$HOME/Desktop/Starter"` that already looks like a project. If GitHub is
 private, copy the pack onto the Mac first and re-run with `PACK` set to that
 folder.
 
@@ -128,7 +128,7 @@ runs when it comes back.
 open "$PACK/scripts/Uninstall Workshop Agent.command"
 ```
 
-Log: `~/Library/Logs/ambassadors26-agent.log`
+Log: `"$HOME/Library/Logs/ambassadors26-agent.log"`
 
 Do not install this on a Mac you are still building on — a dashboard reset
 wipes `Starter/` the same way the local script does.
@@ -158,7 +158,7 @@ cd "$PACK"
 ./scripts/Rescue\ Session.command --yes
 ```
 
-That reads the current theme from `.session-last-theme` or `SEED.md`, restores the stock shell, re-applies that theme, and copies the result onto `~/Desktop/Starter` if that folder exists. It does not pick a new look, does not clear exercise ticks, and does not commit.
+That reads the current theme from `.session-last-theme` or `SEED.md`, restores the stock shell, re-applies that theme, and copies the result onto `"$HOME/Desktop/Starter"` if that folder exists. It does not pick a new look, does not clear exercise ticks, and does not commit.
 
 Do **not** `git reset --hard` this pack. Do **not** `git clean -x`.
 
@@ -195,7 +195,7 @@ See the current seed without guessing:
 ```bash
 cat "$PACK/Starter/SEED.md"
 # or
-cat ~/Desktop/Starter/SEED.md
+cat "$HOME/Desktop/Starter/SEED.md"
 ```
 
 ---
@@ -260,10 +260,10 @@ osascript -e 'tell application "Ambassadors26" to quit'
 rsync -a --delete scripts/starter-stock/ Starter/
 # overlay AGENTS.md / BUILD-SPEC.md / skills from scripts/starter-overlay/
 python3 scripts/apply_seed.py --starter Starter   # or --theme <id> / rescue keeps the current id
-# if ~/Desktop/Starter exists, copy the restored+seeded pack Starter onto it
+# if "$HOME/Desktop/Starter" exists, copy the restored+seeded pack Starter onto it
 
-rm -rf ~/Library/Developer/Xcode/DerivedData/*Ambassadors26*
-find ~/Desktop -maxdepth 1 \( -name 'Screen Shot *.png' -o -name 'Screenshot *.png' \) -mtime -1 -delete
+rm -rf "$HOME/Library/Developer/Xcode/DerivedData/"*Ambassadors26*
+find "$HOME/Desktop" -maxdepth 1 \( -name 'Screen Shot *.png' -o -name 'Screenshot *.png' \) -mtime -1 -delete
 open -u "file://$PACK/exercise.html#reset"
 ```
 

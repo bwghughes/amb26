@@ -1,6 +1,6 @@
 #!/bin/bash
 # From-scratch bootstrap for a contest Mac that already has Xcode.
-# Clones the pack if needed, materializes Starter/, copies ~/Desktop/Starter
+# Clones the pack if needed, materializes Starter/, copies "$HOME/Desktop/Starter"
 # on first install, and installs the workshop LaunchAgent. Does not reset.
 #
 #   curl -fsSL https://ambassadors26.up.railway.app/install | bash
@@ -11,6 +11,8 @@
 #   SERVER / CONTEST_URL   contest site (default https://ambassadors26.up.railway.app)
 #   AGENT_SECRET           must match the server (default workshop-reset)
 #   PACK                   existing Ambassadors26-CodeAlong folder (clone here if missing)
+#                          default: "$HOME/Desktop/Ambassadors26-CodeAlong"
+#   DESKTOP_STARTER        Desktop copy of Starter (default "$HOME/Desktop/Starter")
 #   REPO_URL / PACK_REMOTE git URL (default https://github.com/bwghughes/amb26.git)
 # Codex API key comes from MDM on the Mac (not from this curl). Read at runtime:
 #   OPENAI_API_KEY / CODEX_API_KEY in process env, launchctl getenv, or
@@ -23,8 +25,8 @@ DEFAULT_REMOTE="https://github.com/bwghughes/amb26.git"
 DEFAULT_PACK="$HOME/Desktop/Ambassadors26-CodeAlong"
 LABEL="com.ambassadors26.workshop-agent"
 SUPPORT="$HOME/Library/Application Support/Ambassadors26"
+LOG="$HOME/Library/Logs/ambassadors26-agent.log"
 PLIST="$HOME/Library/LaunchAgents/${LABEL}.plist"
-DESKTOP_STARTER="$HOME/Desktop/Starter"
 PYTHON="/usr/bin/python3"
 
 SERVER="${SERVER:-${CONTEST_URL:-$DEFAULT_SERVER}}"
@@ -107,7 +109,7 @@ clone_failed() {
   echo "If that repo is private, copy Ambassadors26-CodeAlong onto this Mac and re-run with PACK set:" >&2
   echo "  PACK=$DEFAULT_PACK curl -fsSL ${DEFAULT_SERVER}/install | bash" >&2
   echo "Or set REPO_URL to a reachable git remote." >&2
-  echo "Common locations: ~/Desktop/Ambassadors26-CodeAlong, ~/code/Ambassadors26-CodeAlong" >&2
+  echo "Common locations: $HOME/Desktop/Ambassadors26-CodeAlong, $HOME/code/Ambassadors26-CodeAlong" >&2
   exit 1
 }
 
@@ -179,8 +181,9 @@ chmod_scripts() {
   done
 }
 
-# First install: create ~/Desktop/Starter so pairs open that project.
+# First install: create "$HOME/Desktop/Starter" so pairs open that project.
 # Re-run: leave an existing Desktop copy alone (a pair may be mid-session).
+# Override with DESKTOP_STARTER.
 ensure_desktop_starter() {
   local src="$PACK/Starter"
   DESKTOP_NOTE="Open $src/Ambassadors26.xcodeproj in Xcode."
@@ -191,8 +194,8 @@ ensure_desktop_starter() {
   fi
 
   if [[ -d "$DESKTOP_STARTER" ]] && looks_like_starter "$DESKTOP_STARTER"; then
-    echo "Leaving existing ~/Desktop/Starter in place."
-    DESKTOP_NOTE="Open ~/Desktop/Starter/Ambassadors26.xcodeproj in Xcode."
+    echo "Leaving existing $DESKTOP_STARTER in place."
+    DESKTOP_NOTE="Open $DESKTOP_STARTER/Ambassadors26.xcodeproj in Xcode."
     return 0
   fi
 
@@ -200,7 +203,7 @@ ensure_desktop_starter() {
     local leftover
     leftover="$(find "$DESKTOP_STARTER" -mindepth 1 -maxdepth 1 ! -name '.DS_Store' 2>/dev/null | wc -l | tr -d ' ')"
     if [[ "$leftover" != "0" ]]; then
-      echo "Refusing to overwrite ~/Desktop/Starter (not a Starter project)." >&2
+      echo "Refusing to overwrite $DESKTOP_STARTER (not a Starter project)." >&2
       return 0
     fi
   fi
@@ -212,8 +215,8 @@ ensure_desktop_starter() {
     --exclude '*.xcuserstate' \
     --exclude DerivedData/ \
     "$src"/ "$DESKTOP_STARTER"/
-  echo "Copied Starter to ~/Desktop/Starter"
-  DESKTOP_NOTE="Open ~/Desktop/Starter/Ambassadors26.xcodeproj in Xcode."
+  echo "Copied Starter to $DESKTOP_STARTER"
+  DESKTOP_NOTE="Open $DESKTOP_STARTER/Ambassadors26.xcodeproj in Xcode."
 }
 
 xcode_app_path() {
@@ -327,7 +330,7 @@ warn_codex() {
 }
 
 # Official Xcode Intelligence path: AgentVersions.plist names the Codex
-# tarball, Xcode loads it from ~/Library/Developer/Xcode/CodingAssistant.
+# tarball, Xcode loads it from "$HOME/Library/Developer/Xcode/CodingAssistant".
 # Missing MDM key or Codex setup must not fail pack + LaunchAgent.
 install_xcode_codex() {
   local key="" source="" resolved=""
@@ -563,6 +566,8 @@ PY
 
 need_tools
 
+DESKTOP_STARTER="$(expand_path "${DESKTOP_STARTER:-$HOME/Desktop/Starter}")"
+
 if [[ -n "${PACK:-}" ]]; then
   PACK="$(expand_path "$PACK")"
   if looks_like_pack "$PACK"; then
@@ -591,7 +596,7 @@ ensure_starter
 chmod_scripts
 ensure_desktop_starter
 
-mkdir -p "$SUPPORT" "$HOME/Library/LaunchAgents" "$HOME/Library/Logs"
+mkdir -p "$SUPPORT" "$(dirname "$PLIST")" "$(dirname "$LOG")"
 "$PYTHON" - "$SUPPORT/agent.json" "$SERVER" "$SECRET" "$PACK" <<'PY'
 import json, sys
 from pathlib import Path
@@ -626,9 +631,9 @@ cat > "$PLIST" <<EOF
     <string>${AGENT}</string>
   </array>
   <key>StandardOutPath</key>
-  <string>${HOME}/Library/Logs/ambassadors26-agent.log</string>
+  <string>${LOG}</string>
   <key>StandardErrorPath</key>
-  <string>${HOME}/Library/Logs/ambassadors26-agent.log</string>
+  <string>${LOG}</string>
 </dict>
 </plist>
 EOF

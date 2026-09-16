@@ -50,7 +50,7 @@ A grey clone of the projector demo is an incomplete submission even if the field
       Computer Name appears under Workshop Macs on `/admin`. Reopen Xcode
       after install. If the script warns that MDM has not delivered the key,
       fix the profile and re-run the same curl.
-- [ ] `~/Desktop/Starter` **opened in Xcode and run once** — warms the build so their first rebuild is seconds, not a minute. First Xcode launch may install extra components; first `.command` script may need Right-click → Open.
+- [ ] `"$HOME/Desktop/Starter"` **opened in Xcode and run once** — warms the build so their first rebuild is seconds, not a minute. First Xcode launch may install extra components; first `.command` script may need Right-click → Open.
 - [ ] **Reset Workshop run once before doors** (dashboard **Reset all**, or `scripts/Reset Workshop.command`) so the first pair is not all on hospital grey.
 - [ ] The finished app (`../Ambassadors26`) built and run once too, **including the record button** — pre-downloads the speech assets. Twenty Macs doing that on conference Wi-Fi is how you lose the session.
 - [ ] ~30 GB free disk.
@@ -115,7 +115,7 @@ Or double-click the script locally and confirm **Reset**. Either way it:
 
 1. Quits the app.
 2. Restores `Starter/` from `scripts/starter-stock/` (the stock three-pane shell), then
-   overlays agent docs. If `~/Desktop/Starter` exists, that copy is replaced with the
+   overlays agent docs. If `"$HOME/Desktop/Starter"` exists, that copy is replaced with the
    restored+seeded pack Starter.
 3. Picks a new theme (accent, title, empty-state symbol, sample notes, spoken line) and
    writes `SEED.md`.

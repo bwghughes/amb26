@@ -10,7 +10,8 @@ set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$DIR/.." && pwd)"
 STARTER="$ROOT/Starter"
-DESKTOP_STARTER="$HOME/Desktop/Starter"
+DESKTOP_STARTER="${DESKTOP_STARTER:-$HOME/Desktop/Starter}"
+DESKTOP_STARTER="${DESKTOP_STARTER/#\~/$HOME}"
 STOCK="$ROOT/scripts/starter-stock"
 APPLY="$ROOT/scripts/apply_seed.py"
 YES=0

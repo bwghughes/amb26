@@ -54,11 +54,11 @@ The script never prints the key. It stops at the first non-empty value:
 1. Process environment: `OPENAI_API_KEY`, then `CODEX_API_KEY`
 2. `launchctl getenv`: `OPENAI_API_KEY`, then `CODEX_API_KEY`
 3. `defaults read` on **`com.openai.codex`**, then `com.apple.dt.Xcode`, using the names in the table above
-4. Any `.plist` under `/Library/Managed Preferences`, `/Library/Managed Preferences/$USER`, or `~/Library/Managed Preferences` that contains those key names
+4. Any `.plist` under `/Library/Managed Preferences`, `/Library/Managed Preferences/$USER`, or `"$HOME/Library/Managed Preferences"` that contains those key names
 
 If it finds a key, it runs `codex login --with-api-key` with:
 
-`CODEX_HOME=~/Library/Developer/Xcode/CodingAssistant/codex`
+`CODEX_HOME="$HOME/Library/Developer/Xcode/CodingAssistant/codex"`
 
 That stores the login in the login Keychain, service **`Codex Auth`**. If `launchctl getenv` is still empty, the installer may call `launchctl setenv` for `OPENAI_API_KEY` and `CODEX_API_KEY` so Dock-launched Xcode can see them.
 
