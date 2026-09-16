@@ -138,6 +138,8 @@ open "$PACK/scripts/Uninstall Workshop Agent.command"
 ```
 
 Log: `/Users/Ambassador/Library/Logs/ambassadors26-agent.log`
+LaunchAgent: `/Users/Ambassador/Library/LaunchAgents/com.ambassadors26.workshop-agent.plist`
+Agent config: `/Users/Ambassador/Library/Application Support/Ambassadors26/agent.json`
 
 Do not install this on a Mac you are still building on — a dashboard reset
 wipes `Starter/` the same way the local script does.
